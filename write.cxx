@@ -131,6 +131,42 @@ writer &writer::value(luxem::value const &data)
 	return *this;
 }
 
+writer &writer::value(bool data) 
+	{ return value(primitive_value(data)); }
+
+writer &writer::value(std::string const &type, bool data)
+	{ return value(primitive_value(type, data)); }
+
+writer &writer::value(int data) 
+	{ return value(primitive_value(data)); }
+
+writer &writer::value(std::string const &type, int data)
+	{ return value(primitive_value(type, data)); }
+
+writer &writer::value(unsigned int data) 
+	{ return value(primitive_value(data)); }
+
+writer &writer::value(std::string const &type, unsigned int data)
+	{ return value(primitive_value(type, data)); }
+
+writer &writer::value(float data) 
+	{ return value(primitive_value(data)); }
+
+writer &writer::value(std::string const &type, float data)
+	{ return value(primitive_value(type, data)); }
+
+writer &writer::value(double data) 
+	{ return value(primitive_value(data)); }
+
+writer &writer::value(std::string const &type, double data)
+	{ return value(primitive_value(type, data)); }
+
+writer &writer::value(subencodings::ascii16, std::vector<uint8_t> const &data) 
+	{ return value(primitive_value(subencodings::ascii16{}, data)); }
+
+writer &writer::value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data)
+	{ return value(primitive_value(type, subencodings::ascii16{}, data)); }
+
 void writer::process(std::list<std::unique_ptr<writer::stackable>> &stack, luxem::value const &data)
 {
 	if (data.has_type()) type(data.get_type());

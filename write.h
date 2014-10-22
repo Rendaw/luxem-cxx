@@ -44,6 +44,18 @@ struct raw_writer
 struct writer : raw_writer
 {
 	writer &value(luxem::value const &data);
+	writer &value(bool data);
+	writer &value(std::string const &type, bool data);
+	writer &value(int data);
+	writer &value(std::string const &type, int data);
+	writer &value(unsigned int data);
+	writer &value(std::string const &type, unsigned int data);
+	writer &value(float data);
+	writer &value(std::string const &type, float data);
+	writer &value(double data);
+	writer &value(std::string const &type, double data);
+	writer &value(subencodings::ascii16, std::vector<uint8_t> const &data);
+	writer &value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data);
 
 	friend struct array_stackable;
 	friend struct object_stackable;

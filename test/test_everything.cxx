@@ -52,6 +52,12 @@ void compare_value(luxem::value const *got, luxem::value const *expected)
 
 int main(void)
 {
+	assert2(luxem::writer().value(-4).dump(), std::string("-4,"));
+	assert2(luxem::writer().value(4u).dump(), std::string("4,"));
+	assert2(luxem::writer().value(4.7).dump(), std::string("4.7,"));
+	assert2(luxem::writer().value(4.7f).dump(), std::string("4.7,"));
+	assert2(luxem::writer().value(false).dump(), std::string("false,"));
+
 	luxem::array_value input{luxem::ad{
 		std::make_shared<luxem::primitive_value>(-4),
 		std::make_shared<luxem::primitive_value>(23u),
