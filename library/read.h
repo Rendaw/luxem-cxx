@@ -16,12 +16,6 @@ extern "C"
 namespace luxem
 {
 
-struct read_exception
-{
-	size_t offset;
-	std::string message;
-};
-
 struct raw_reader; // friend prototypes to prevent incorrect implicit definition, this is ridiculous
 static luxem_bool_t translate_object_begin(luxem_rawread_context_t *, void *); // ...
 static luxem_bool_t translate_object_end(luxem_rawread_context_t *, void *);

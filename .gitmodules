@@ -1,3 +1,6 @@
 [submodule "c"]
-	path = c
+	path = library/c
 	url = ../luxem-c
+[submodule "tupsupport"]
+	path = tupsupport
+	url = ../ren-tupsupport
