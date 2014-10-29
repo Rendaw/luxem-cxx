@@ -201,7 +201,7 @@ static void build_struct(std::shared_ptr<value> &&data, std::function<void(std::
 		{ 
 			build_struct(std::move(data), [out, key = std::move(key)](std::shared_ptr<value> &&data)
 			{ 
-				out->get_object().insert(std::make_pair(std::move(key), std::move(data))); 
+				out->get_data().insert(std::make_pair(std::move(key), std::move(data))); 
 			});
 		});
 
@@ -222,7 +222,7 @@ static void build_struct(std::shared_ptr<value> &&data, std::function<void(std::
 		{ 
 			build_struct(std::move(data), [out](std::shared_ptr<value> &&data)
 			{
-				out->get_array().emplace_back(std::move(data)); 
+				out->get_data().emplace_back(std::move(data)); 
 			});
 		});
 
@@ -238,7 +238,9 @@ static void build_struct(std::shared_ptr<value> &&data, std::function<void(std::
 	}
 }
 
-reader::object_context::object_context(object_stackable &base) : base(base) { }
+reader::object_context::object_context(std::string &&type, object_stackable &base) : value(type), base(base) {}
+
+reader::object_context::object_context(object_stackable &base) : base(base) {}
 
 void reader::object_context::element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback)
 {
@@ -266,6 +268,8 @@ void reader::object_context::finished(std::function<void(void)> &&callback)
 	assert(!base.finish_callback);
 	base.finish_callback = callback; 
 }
+
+reader::array_context::array_context(std::string &&type, array_stackable &base) : value(type), base(base) {}
 
 reader::array_context::array_context(array_stackable &base) : base(base) { }
 
@@ -295,14 +299,18 @@ reader::reader(void) :
 		[this]() 
 		{
 			auto object = std::make_unique<object_stackable>();
-			process(std::make_unique<object_context>(*object));
+			process(has_type ?
+				std::make_unique<object_context>(std::move(current_type), *object) :
+				std::make_unique<object_context>(*object));
 			stack.emplace_back(std::move(object));
 		},
 		[this]() { pop(); },
 		[this]() 
 		{
 			auto array = std::make_unique<array_stackable>();
-			process(std::make_unique<array_context>(*array));
+			process(has_type ?
+				std::make_unique<array_context>(std::move(current_type), *array) :
+				std::make_unique<array_context>(*array));
 			stack.emplace_back(std::move(array));
 		},
 		[this]() { pop(); },
@@ -363,7 +371,6 @@ void reader::process(std::shared_ptr<value> &&data)
 {
 	assert(!stack.empty());
 	if (stack.empty()) return;
-	if (has_type) data->set_type(std::move(current_type));
 	stack.back()->process(std::move(data), std::move(current_key));
 	has_type = false;
 	has_key = false;

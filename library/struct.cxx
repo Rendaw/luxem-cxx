@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <cstdlib>
+#include <list>
 
 extern "C"
 {
@@ -18,14 +19,8 @@ value::~value(void) { }
 
 bool value::has_type(void) const { return !type.empty(); }
 
-std::string &value::get_type(void) { assert(has_type()); return type; }
-
 std::string const &value::get_type(void) const { assert(has_type()); return type; }
 	
-void value::set_type(std::string const &type) { this->type = type; }
-
-void value::set_type(std::string &&type) { this->type = std::move(type); }
-
 template <typename type> type convert_to(std::string const &data)
 {
 	type out;
@@ -138,9 +133,9 @@ object_value::object_value(std::string const &type, object_data &&data) : value(
 
 object_value::object_value(std::string &&type, object_data &&data) : value(std::move(type)), data(std::move(data)) {}
 
-object_value::object_data &object_value::get_object(void) { return data; }
+object_value::object_data &object_value::get_data(void) { return data; }
 
-object_value::object_data const &object_value::get_object(void) const { return data; }
+object_value::object_data const &object_value::get_data(void) const { return data; }
 	
 array_value::array_value(void) {}
 
@@ -150,9 +145,112 @@ array_value::array_value(std::string const &type, array_data &&data) : value(typ
 
 array_value::array_value(std::string &&type, array_data &&data) : value(std::move(type)), data(std::move(data)) {}
 
-array_value::array_data &array_value::get_array(void) { return data; }
+array_value::array_data &array_value::get_data(void) { return data; }
 
-array_value::array_data const &array_value::get_array(void) const { return data; }
+array_value::array_data const &array_value::get_data(void) const { return data; }
+
+template <typename callback_type> struct walk_stackable 
+{
+	virtual ~walk_stackable(void) {}
+	virtual bool step(std::list<std::unique_ptr<walk_stackable<callback_type>>> &stack, callback_type const &callback) = 0;
+};
+
+template 
+<
+	typename node_type, 
+	typename callback_type
+> struct object_walk_stackable;
+
+template 
+<
+	typename node_type, 
+	typename callback_type
+> struct array_walk_stackable;
+
+template // The costs of DRY in c++
+<
+	typename node_type, 
+	typename callback_type
+> static void walk_one
+(
+	std::list<std::unique_ptr<walk_stackable<callback_type>>> &stack, 
+	std::string const &key, 
+	node_type &node, 
+	callback_type const &callback
+)
+{
+	callback(key, node);
+	if (!node) return;
+	if (node->template is<object_value>())
+		stack.emplace_back(std::make_unique<object_walk_stackable<
+			node_type, 
+			callback_type>>(node->template as<object_value>()));
+	else if (node->template is<array_value>())
+		stack.emplace_back(std::make_unique<array_walk_stackable<
+			node_type, 
+			callback_type>>(node->template as<array_value>()));
+}
+
+template 
+<
+	typename node_type, 
+	typename callback_type
+> struct object_walk_stackable : walk_stackable<callback_type>
+{
+	typename std::conditional<std::is_const<node_type>::value, object_value const, object_value>::type &node;
+	typename std::conditional<std::is_const<node_type>::value, od::const_iterator, od::iterator>::type iterator;
+
+	object_walk_stackable(decltype(node) &node) : node(node), iterator(node.get_data().begin()) {}
+
+	bool step(std::list<std::unique_ptr<walk_stackable<callback_type>>> &stack, callback_type const &callback) override
+	{
+		if (iterator == node.get_data().end()) return false;
+		walk_one(stack, iterator->first, iterator->second, callback);
+		++iterator;
+		return true;
+	}
+};
+
+template 
+<
+	typename node_type, 
+	typename callback_type
+> struct array_walk_stackable : walk_stackable<callback_type>
+{
+	typename std::conditional<std::is_const<node_type>::value, array_value const, array_value>::type &node;
+	typename std::conditional<std::is_const<node_type>::value, ad::const_iterator, ad::iterator>::type iterator;
+
+	array_walk_stackable(decltype(node) &node) : node(node), iterator(node.get_data().begin()) {}
+
+	bool step(std::list<std::unique_ptr<walk_stackable<callback_type>>> &stack, callback_type const &callback) override
+	{
+		if (iterator == node.get_data().end()) return false;
+		walk_one(stack, {}, *iterator, callback);
+		++iterator;
+		return true;
+	}
+};
+
+template <typename node_type, typename callback_type> static void walk_implementation(node_type &root, callback_type const &callback)
+{
+	std::list<std::unique_ptr<walk_stackable<callback_type>>> stack;
+	walk_one(stack, {}, root, callback);
+	while (!stack.empty())
+		if (!stack.back()->step(stack, callback))
+			stack.pop_back();
+}
+
+void walk(std::shared_ptr<value> &root, walk_callback const &callback) 
+	{ walk_implementation(root, callback); }
+
+void walk(std::shared_ptr<value> const &root, const_walk_callback const &callback) 
+	{ walk_implementation(root, callback); }
+
+void walk(std::shared_ptr<object_value> const &root, const_walk_callback const &callback) 
+	{ walk_implementation(root, callback); }
+
+void walk(std::shared_ptr<array_value> const &root, const_walk_callback const &callback) 
+	{ walk_implementation(root, callback); }
 
 }
 

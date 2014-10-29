@@ -17,35 +17,35 @@ template <typename type> void assert2(type const &got, type const &expected)
 	assert(got == expected);
 }
 
-void compare_value(luxem::value const *got, luxem::value const *expected)
+void compare_value(luxem::value const &got, luxem::value const &expected)
 {
-	assert2(got->has_type(), expected->has_type());
-	if (got->has_type()) assert2(got->get_type(), expected->get_type());
-	if (auto expected_object = dynamic_cast<luxem::object_value const *>(expected))
+	assert2(got.has_type(), expected.has_type());
+	if (got.has_type()) assert2(got.get_type(), expected.get_type());
+	if (expected.is<luxem::object_value>())
 	{
-		auto got_object = dynamic_cast<luxem::object_value const *>(got);
-		assert1(got_object);
-		assert2(got_object->get_object().size(), expected_object->get_object().size());
-		for (auto &expected_pair : expected_object->get_object())
+		auto expected_object = expected.as<luxem::object_value>();
+		auto got_object = got.as<luxem::object_value>();
+		assert2(got_object.get_data().size(), expected_object.get_data().size());
+		for (auto &expected_pair : expected_object.get_data())
 		{
-			auto got_pair = got_object->get_object().find(expected_pair.first);
-			assert(got_pair != got_object->get_object().end());
-			compare_value(got_pair->second.get(), expected_pair.second.get());
+			auto got_pair = got_object.get_data().find(expected_pair.first);
+			assert(got_pair != got_object.get_data().end());
+			compare_value(*got_pair->second, *expected_pair.second);
 		}
 	}
-	else if (auto expected_array = dynamic_cast<luxem::array_value const *>(expected))
+	if (expected.is<luxem::array_value>())
 	{
-		auto got_array = dynamic_cast<luxem::array_value const *>(got);
-		assert1(got_array);
-		assert2(got_array->get_array().size(), expected_array->get_array().size());
-		for (size_t index = 0; index < expected_array->get_array().size(); ++index)
-			compare_value(got_array->get_array()[index].get(), expected_array->get_array()[index].get());
+		auto expected_array = expected.as<luxem::array_value>();
+		auto got_array = got.as<luxem::array_value>();
+		assert2(got_array.get_data().size(), expected_array.get_data().size());
+		for (size_t index = 0; index < expected_array.get_data().size(); ++index)
+			compare_value(*got_array.get_data()[index], *expected_array.get_data()[index]);
 	}
-	else if (auto expected_primitive = dynamic_cast<luxem::primitive_value const *>(expected))
+	if (expected.is<luxem::primitive_value>())
 	{
-		auto got_primitive = dynamic_cast<luxem::primitive_value const *>(got);
-		assert1(got_primitive);
-		assert2(got_primitive->get_primitive(), expected_primitive->get_primitive());
+		auto expected_primitive = expected.as<luxem::primitive_value>();
+		auto got_primitive = got.as<luxem::primitive_value>();
+		assert2(got_primitive.get_primitive(), expected_primitive.get_primitive());
 	}
 	else assert(false);
 }
@@ -58,7 +58,7 @@ int main(void)
 	assert2(luxem::writer().value(4.7f).dump(), std::string("4.7,"));
 	assert2(luxem::writer().value(false).dump(), std::string("false,"));
 
-	luxem::array_value input{luxem::ad{
+	auto input = std::make_shared<luxem::array_value>(luxem::ad{
 		std::make_shared<luxem::primitive_value>(-4),
 		std::make_shared<luxem::primitive_value>(23u),
 		std::make_shared<luxem::primitive_value>(12.7f),
@@ -82,14 +82,23 @@ int main(void)
 			{"equestrianism", std::make_shared<luxem::primitive_value>(true)}
 		}),
 		std::make_shared<luxem::primitive_value>(luxem::subencodings::ascii16{}, std::vector<uint8_t>{1, 12, 255})
-	}};
-	compare_value(&input, &input);
+	});
+	compare_value(*input, *input);
 	std::shared_ptr<luxem::value> output;
 	luxem::reader reader;
 	reader.build_struct([&output](std::shared_ptr<luxem::value> &&value) mutable { output = std::move(value); });
-	reader.feed(luxem::writer().value(input).dump());
+	reader.feed(luxem::writer().value(*input).dump());
 	assert(output);
-	compare_value(output.get(), &input);
+	compare_value(*output, *input);
+
+	{
+		size_t walk_count = 0;
+		std::shared_ptr<luxem::value> mutable_root(input);
+		luxem::walk(mutable_root, [&walk_count](std::string const &, std::shared_ptr<luxem::value> &value) { ++walk_count; });
+		luxem::walk(input, [&walk_count](std::string const &, std::shared_ptr<luxem::value> const &value) { ++walk_count; });
+		assert(walk_count == 20 * 2);
+	}
+
 	return 0;
 }
 

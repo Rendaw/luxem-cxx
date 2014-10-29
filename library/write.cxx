@@ -81,11 +81,11 @@ struct array_stackable : writer::stackable
 	array_value const &data;
 	array_value::array_data::const_iterator iter;
 
-	array_stackable(array_value const &data) : data(data), iter(data.get_array().begin()) { }
+	array_stackable(array_value const &data) : data(data), iter(data.get_data().begin()) { }
 
 	bool step(writer &writer, std::list<std::unique_ptr<stackable>> &stack) override
 	{
-		if (iter == data.get_array().end())
+		if (iter == data.get_data().end())
 		{
 			writer.array_end();
 			return false;
@@ -101,11 +101,11 @@ struct object_stackable : writer::stackable
 	object_value const &data;
 	object_value::object_data::const_iterator iter;
 
-	object_stackable(object_value const &data) : data(data), iter(data.get_object().begin()) { }
+	object_stackable(object_value const &data) : data(data), iter(data.get_data().begin()) { }
 
 	bool step(writer &writer, std::list<std::unique_ptr<stackable>> &stack) override
 	{
-		if (iter == data.get_object().end())
+		if (iter == data.get_data().end())
 		{
 			writer.object_end();
 			return false;

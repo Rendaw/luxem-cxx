@@ -16,10 +16,7 @@ struct value
 	virtual ~value(void);
 
 	bool has_type(void) const;
-	std::string &get_type(void);
 	std::string const &get_type(void) const;
-	void set_type(std::string const &type);
-	void set_type(std::string &&type);
 
 	template <typename type> bool is(void) const 
 		{ return typeid(*this) == typeid(type); }
@@ -31,7 +28,7 @@ struct value
 		{ assert(is<type>()); return *reinterpret_cast<type const *>(this); }
 
 	private:
-		std::string type;
+		std::string const type;
 };
 
 struct subencodings
@@ -70,7 +67,7 @@ struct primitive_value : value
 	std::vector<uint8_t> get_ascii16(void) const;
 
 	private:
-		std::string data;
+		std::string const data;
 };
 
 struct object_value : value
@@ -82,8 +79,8 @@ struct object_value : value
 	object_value(std::string const &type, object_data &&data);
 	object_value(std::string &&type, object_data &&data);
 
-	object_data &get_object(void);
-	object_data const &get_object(void) const;
+	object_data &get_data(void);
+	object_data const &get_data(void) const;
 
 	private:
 		object_data data;
@@ -100,14 +97,29 @@ struct array_value : value
 	array_value(std::string const &type, array_data &&data);
 	array_value(std::string &&type, array_data &&data);
 
-	array_data &get_array(void);
-	array_data const &get_array(void) const;
+	array_data &get_data(void);
+	array_data const &get_data(void) const;
 
 	private:
 		array_data data;
 };
 
 typedef array_value::array_data ad;
+
+typedef std::function
+<
+	void (std::string const &opt_key, std::shared_ptr<value> &node)
+> walk_callback;
+
+typedef std::function
+<
+	void (std::string const &opt_key, std::shared_ptr<value> const &node)
+> const_walk_callback;
+
+void walk(std::shared_ptr<value> &root, walk_callback const &callback);
+void walk(std::shared_ptr<value> const &root, const_walk_callback const &callback);
+void walk(std::shared_ptr<object_value> const &root, const_walk_callback const &callback);
+void walk(std::shared_ptr<array_value> const &root, const_walk_callback const &callback);
 
 }
 

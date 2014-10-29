@@ -71,6 +71,7 @@ struct reader : raw_reader
 
 	struct object_context : value
 	{
+		object_context(std::string &&type, object_stackable &base);
 		object_context(object_stackable &base);
 		void element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback);
 		void build_struct(std::string const &key, std::function<void(std::shared_ptr<value> &&data)> &&callback);
@@ -83,6 +84,7 @@ struct reader : raw_reader
 
 	struct array_context : value
 	{
+		array_context(std::string &&type, array_stackable &base);
 		array_context(array_stackable &base);
 		void element(std::function<void(std::shared_ptr<value> &&)> &&callback);
 		void build_struct(std::function<void(std::shared_ptr<value> &&)> &&callback);
