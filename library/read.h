@@ -138,6 +138,10 @@ struct reader : raw_reader
 		void pop(void);
 };
 
+std::vector<std::shared_ptr<luxem::value>> read_struct(std::string const &data) ;
+std::vector<std::shared_ptr<luxem::value>> read_struct(char const *pointer, size_t length);
+std::vector<std::shared_ptr<luxem::value>> read_struct(FILE *file);
+
 }
 
 #endif

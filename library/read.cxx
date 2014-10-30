@@ -382,5 +382,24 @@ void reader::pop(void)
 	stack.pop_back();
 }
 
+template <typename ...argument_types> 
+	std::vector<std::shared_ptr<luxem::value>> read_struct_implementation(argument_types ...arguments)
+{
+	std::vector<std::shared_ptr<luxem::value>> out;
+	reader instance;
+	instance.element([&out](std::shared_ptr<luxem::value> &&data) { out.emplace_back(std::move(data)); });
+	instance.feed(std::forward<argument_types>(arguments)...);
+	return out;
+}
+
+std::vector<std::shared_ptr<luxem::value>> read_struct(std::string const &data) 
+	{ return read_struct_implementation(data); }
+
+std::vector<std::shared_ptr<luxem::value>> read_struct(char const *pointer, size_t length)
+	{ return read_struct_implementation(pointer, length); }
+
+std::vector<std::shared_ptr<luxem::value>> read_struct(FILE *file)
+	{ return read_struct_implementation(file); }
+
 }
 
