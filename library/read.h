@@ -74,7 +74,10 @@ struct reader : raw_reader
 		object_context(std::string &&type, object_stackable &base);
 		object_context(object_stackable &base);
 		void element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback);
-		void build_struct(std::string const &key, std::function<void(std::shared_ptr<value> &&data)> &&callback);
+		void build_struct(
+			std::string const &key, 
+			std::function<void(std::shared_ptr<value> &&data)> &&callback, 
+			std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess = {});
 		void passthrough(std::function<void(std::string &&key, std::shared_ptr<value> &&data)> &&callback);
 		void finished(std::function<void(void)> &&callback);
 
@@ -87,7 +90,9 @@ struct reader : raw_reader
 		array_context(std::string &&type, array_stackable &base);
 		array_context(array_stackable &base);
 		void element(std::function<void(std::shared_ptr<value> &&)> &&callback);
-		void build_struct(std::function<void(std::shared_ptr<value> &&)> &&callback);
+		void build_struct(
+			std::function<void(std::shared_ptr<value> &&data)> &&callback, 
+			std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess = {});
 		void finished(std::function<void(void)> &&callback);
 		private:
 			array_stackable &base;

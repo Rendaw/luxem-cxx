@@ -187,7 +187,10 @@ void raw_reader::feed(FILE *file)
 	if (!luxem_rawread_feed_file(context, file, nullptr, nullptr)) { throw_feed_error(*this); }
 }
 
-static void build_struct(std::shared_ptr<value> &&data, std::function<void(std::shared_ptr<value> &&data)> &&callback)
+static void build_struct(
+	std::shared_ptr<value> &&data, 
+	std::function<void(std::shared_ptr<value> &&data)> &&callback,
+	std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess = {})
 {
 	if (data->is<reader::object_context>())
 	{
@@ -197,12 +200,13 @@ static void build_struct(std::shared_ptr<value> &&data, std::function<void(std::
 		if (data->has_type()) out = std::make_shared<object_value>(data->get_type(), od{});
 		else out = std::make_shared<object_value>();
 
-		object_context.passthrough([out](std::string &&key, std::shared_ptr<value> &&data) 
+		object_context.passthrough([out, &preprocess](std::string &&key, std::shared_ptr<value> &&data) 
 		{ 
+			if (preprocess) preprocess(key, data);
 			build_struct(std::move(data), [out, key = std::move(key)](std::shared_ptr<value> &&data)
 			{ 
 				out->get_data().insert(std::make_pair(std::move(key), std::move(data))); 
-			});
+			}, preprocess);
 		});
 
 		object_context.finished([callback = std::move(callback), out]() mutable
@@ -218,12 +222,13 @@ static void build_struct(std::shared_ptr<value> &&data, std::function<void(std::
 		if (data->has_type()) out = std::make_shared<array_value>(data->get_type(), ad{});
 		else out = std::make_shared<array_value>();
 
-		array_context.element([out](std::shared_ptr<value> &&data) 
+		array_context.element([out, &preprocess](std::shared_ptr<value> &&data) 
 		{ 
+			if (preprocess) preprocess({}, data);
 			build_struct(std::move(data), [out](std::shared_ptr<value> &&data)
 			{
 				out->get_data().emplace_back(std::move(data)); 
-			});
+			}, preprocess);
 		});
 
 		array_context.finished([callback = std::move(callback), out]() mutable 
@@ -248,12 +253,16 @@ void reader::object_context::element(std::string &&key, std::function<void(std::
 	base.callbacks.emplace(key, callback);
 }
 
-void reader::object_context::build_struct(std::string const &key, std::function<void(std::shared_ptr<value> &&data)> &&callback)
+void reader::object_context::build_struct(
+	std::string const &key, 
+	std::function<void(std::shared_ptr<value> &&data)> &&callback, 
+	std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess)
 {
 	assert(base.callbacks.find(key) == base.callbacks.end());
-	base.callbacks.emplace(key, [callback = std::move(callback)](std::shared_ptr<value> &&data) mutable
+	base.callbacks.emplace(key, [callback = std::move(callback), key, &preprocess](std::shared_ptr<value> &&data) mutable
 	{ 
-		luxem::build_struct(std::move(data), std::move(callback)); 
+		if (preprocess) preprocess(key, data);
+		luxem::build_struct(std::move(data), std::move(callback), preprocess); 
 	});
 }
 
@@ -279,12 +288,15 @@ void reader::array_context::element(std::function<void(std::shared_ptr<value> &&
 	base.callback = callback;
 }
 
-void reader::array_context::build_struct(std::function<void(std::shared_ptr<value> &&data)> &&callback)
+void reader::array_context::build_struct(
+	std::function<void(std::shared_ptr<value> &&data)> &&callback,
+	std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess)
 {
 	assert(!base.callback);
-	base.callback = [callback = std::move(callback)](std::shared_ptr<value> &&data) mutable
+	base.callback = [callback = std::move(callback), &preprocess](std::shared_ptr<value> &&data) mutable
 	{ 
-		luxem::build_struct(std::move(data), std::move(callback)); 
+		if (preprocess) preprocess({}, data);
+		luxem::build_struct(std::move(data), std::move(callback), preprocess); 
 	};
 }
 
