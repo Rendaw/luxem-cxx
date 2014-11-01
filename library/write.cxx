@@ -1,5 +1,10 @@
 #include "write.h"
 
+extern "C"
+{
+#include "c/luxem_rawwrite.h"
+}
+
 namespace luxem
 {
 

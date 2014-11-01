@@ -6,25 +6,13 @@
 #include <list>
 #include <memory>
 
-extern "C"
-{
-#include "c/luxem_rawread.h"
-}
-
 #include "struct.h"
+
+struct luxem_rawread_context_t;
 
 namespace luxem
 {
 
-struct raw_reader; // friend prototypes to prevent incorrect implicit definition, this is ridiculous
-static luxem_bool_t translate_object_begin(luxem_rawread_context_t *, void *); // ...
-static luxem_bool_t translate_object_end(luxem_rawread_context_t *, void *);
-static luxem_bool_t translate_array_begin(luxem_rawread_context_t *, void *);
-static luxem_bool_t translate_array_end(luxem_rawread_context_t *, void *);
-static luxem_bool_t translate_key(luxem_rawread_context_t *, void *, luxem_string_t const *);
-static luxem_bool_t translate_type(luxem_rawread_context_t *, void *, luxem_string_t const *);
-static luxem_bool_t translate_primitive(luxem_rawread_context_t *, void *, luxem_string_t const *);
-static void throw_feed_error(raw_reader &);
 struct raw_reader
 {
 	raw_reader(
@@ -42,15 +30,7 @@ struct raw_reader
 	size_t feed(char const *pointer, size_t length, bool finish=true);
 	void feed(FILE *file);
 
-	friend luxem_bool_t translate_object_begin(luxem_rawread_context_t *, void *);
-	friend luxem_bool_t translate_object_end(luxem_rawread_context_t *, void *);
-	friend luxem_bool_t translate_array_begin(luxem_rawread_context_t *, void *);
-	friend luxem_bool_t translate_array_end(luxem_rawread_context_t *, void *);
-	friend luxem_bool_t translate_key(luxem_rawread_context_t *, void *, luxem_string_t const *);
-	friend luxem_bool_t translate_type(luxem_rawread_context_t *, void *, luxem_string_t const *);
-	friend luxem_bool_t translate_primitive(luxem_rawread_context_t *, void *, luxem_string_t const *);
-	friend void throw_feed_error(raw_reader &);
-	private:
+	// PRIVATE - but not actually, since cxx has near useless visibility definition
 		luxem_rawread_context_t *context;
 		std::function<void(void)> object_begin;
 		std::function<void(void)> object_end;
@@ -73,13 +53,17 @@ struct reader : raw_reader
 	{
 		object_context(std::string &&type, object_stackable &base);
 		object_context(object_stackable &base);
+
+		static std::string const name;
+		std::string const &get_name(void) const override;
+
 		void element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback);
 		void build_struct(
 			std::string const &key, 
 			std::function<void(std::shared_ptr<value> &&data)> &&callback, 
 			std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess = {});
 		void passthrough(std::function<void(std::string &&key, std::shared_ptr<value> &&data)> &&callback);
-		void finished(std::function<void(void)> &&callback);
+		void finally(std::function<void(void)> &&callback);
 
 		private:
 			object_stackable &base;
@@ -89,11 +73,15 @@ struct reader : raw_reader
 	{
 		array_context(std::string &&type, array_stackable &base);
 		array_context(array_stackable &base);
+
+		static std::string const name;
+		std::string const &get_name(void) const override;
+
 		void element(std::function<void(std::shared_ptr<value> &&)> &&callback);
 		void build_struct(
 			std::function<void(std::shared_ptr<value> &&data)> &&callback, 
 			std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess = {});
-		void finished(std::function<void(void)> &&callback);
+		void finally(std::function<void(void)> &&callback);
 		private:
 			array_stackable &base;
 	};

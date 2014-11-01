@@ -6,10 +6,24 @@
 
 #include <iostream> // DEBUG
 
+extern "C"
+{
+#include "c/luxem_rawread.h"
+}
+
 static char cxx_error_token;
 
 namespace luxem
 {
+
+/*static luxem_bool_t translate_object_begin(luxem_rawread_context_t *, void *); // ...
+static luxem_bool_t translate_object_end(luxem_rawread_context_t *, void *);
+static luxem_bool_t translate_array_begin(luxem_rawread_context_t *, void *);
+static luxem_bool_t translate_array_end(luxem_rawread_context_t *, void *);
+static luxem_bool_t translate_key(luxem_rawread_context_t *, void *, luxem_string_t const *);
+static luxem_bool_t translate_type(luxem_rawread_context_t *, void *, luxem_string_t const *);
+static luxem_bool_t translate_primitive(luxem_rawread_context_t *, void *, luxem_string_t const *);
+static void throw_feed_error(raw_reader &);*/
 
 static luxem_bool_t translate_object_begin(luxem_rawread_context_t *context, void *user_data)
 {
@@ -209,7 +223,7 @@ static void build_struct(
 			}, preprocess);
 		});
 
-		object_context.finished([callback = std::move(callback), out]() mutable
+		object_context.finally([callback = std::move(callback), out]() mutable
 		{ 
 			callback(std::move(out)); 
 		});
@@ -231,7 +245,7 @@ static void build_struct(
 			}, preprocess);
 		});
 
-		array_context.finished([callback = std::move(callback), out]() mutable 
+		array_context.finally([callback = std::move(callback), out]() mutable 
 		{ 
 			callback(std::move(out)); 
 		});
@@ -243,9 +257,14 @@ static void build_struct(
 	}
 }
 
+
 reader::object_context::object_context(std::string &&type, object_stackable &base) : value(type), base(base) {}
 
 reader::object_context::object_context(object_stackable &base) : base(base) {}
+		
+std::string const reader::object_context::name("object_context");
+
+std::string const &reader::object_context::get_name(void) const { return name; }
 
 void reader::object_context::element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback)
 {
@@ -272,7 +291,7 @@ void reader::object_context::passthrough(std::function<void(std::string &&key, s
 	base.passthrough_callback = std::move(callback);
 }
 
-void reader::object_context::finished(std::function<void(void)> &&callback)
+void reader::object_context::finally(std::function<void(void)> &&callback)
 { 
 	assert(!base.finish_callback);
 	base.finish_callback = callback; 
@@ -281,6 +300,10 @@ void reader::object_context::finished(std::function<void(void)> &&callback)
 reader::array_context::array_context(std::string &&type, array_stackable &base) : value(type), base(base) {}
 
 reader::array_context::array_context(array_stackable &base) : base(base) { }
+
+std::string const reader::array_context::name("array_context");
+
+std::string const &reader::array_context::get_name(void) const { return name; }
 
 void reader::array_context::element(std::function<void(std::shared_ptr<value> &&data)> &&callback)
 {
@@ -300,7 +323,7 @@ void reader::array_context::build_struct(
 	};
 }
 
-void reader::array_context::finished(std::function<void(void)> &&callback)
+void reader::array_context::finally(std::function<void(void)> &&callback)
 { 
 	assert(!base.finish_callback);
 	base.finish_callback = callback; 

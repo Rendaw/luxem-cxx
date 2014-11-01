@@ -4,11 +4,9 @@
 #include <list>
 #include <memory>
 
-extern "C"
-{
-#include "c/luxem_rawwrite.h"
-}
 #include "struct.h"
+
+struct luxem_rawwrite_context_t;
 
 namespace luxem
 {
@@ -43,6 +41,8 @@ struct raw_writer
 
 struct writer : raw_writer
 {
+	using raw_writer::raw_writer;
+
 	writer &value(luxem::value const &data);
 	writer &value(bool data);
 	writer &value(std::string const &type, bool data);

@@ -6,13 +6,13 @@
 namespace luxem
 {
 
-struct finalize
+struct finally
 {
 	std::function<void(void)> callback;
 
-	finalize(std::function<void(void)> &&callback);
-	finalize(std::function<void(void)> const &callback);
-	~finalize(void);
+	finally(std::function<void(void)> &&callback);
+	finally(std::function<void(void)> const &callback);
+	~finally(void);
 };
 
 }

@@ -21,6 +21,10 @@ bool value::has_type(void) const { return !type.empty(); }
 
 std::string const &value::get_type(void) const { assert(has_type()); return type; }
 	
+void value::set_type(std::string const &type) { this->type = type; }
+	
+void value::set_type(std::string &&type) { this->type = std::move(type); }
+	
 template <typename type> type convert_to(std::string const &data)
 {
 	type out;
@@ -62,6 +66,8 @@ std::string convert_from(subencodings::ascii16, std::vector<uint8_t> const &data
 	return out;
 }
 
+std::string const primitive_value::name("primitive_value");
+
 primitive_value::primitive_value(std::string const &data) :
 	data(data) {}
 primitive_value::primitive_value(std::string &&data) :
@@ -100,6 +106,8 @@ primitive_value::primitive_value(subencodings::ascii16, std::vector<uint8_t> con
 	data(convert_from(subencodings::ascii16{}, data)) {}
 primitive_value::primitive_value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data) :
 	value(type), data(convert_from(subencodings::ascii16{}, data)) {}
+	
+std::string const &primitive_value::get_name(void) const { return name; }
 
 std::string const &primitive_value::get_primitive(void) const 
 	{ return data; }
@@ -125,6 +133,8 @@ std::string const &primitive_value::get_string(void) const
 std::vector<uint8_t> primitive_value::get_ascii16(void) const 
 	{ return convert_to(subencodings::ascii16{}, data); }
 
+std::string const object_value::name("object_value");
+
 object_value::object_value(void) {}
 
 object_value::object_value(object_data &&data) : value(), data(std::move(data)) {}
@@ -133,10 +143,14 @@ object_value::object_value(std::string const &type, object_data &&data) : value(
 
 object_value::object_value(std::string &&type, object_data &&data) : value(std::move(type)), data(std::move(data)) {}
 
+std::string const &object_value::get_name(void) const { return name; }
+
 object_value::object_data &object_value::get_data(void) { return data; }
 
 object_value::object_data const &object_value::get_data(void) const { return data; }
 	
+std::string const array_value::name("array_value");
+
 array_value::array_value(void) {}
 
 array_value::array_value(array_data &&data) : value(), data(std::move(data)) {}
@@ -144,6 +158,8 @@ array_value::array_value(array_data &&data) : value(), data(std::move(data)) {}
 array_value::array_value(std::string const &type, array_data &&data) : value(type), data(std::move(data)) {}
 
 array_value::array_value(std::string &&type, array_data &&data) : value(std::move(type)), data(std::move(data)) {}
+
+std::string const &array_value::get_name(void) const { return name; }
 
 array_value::array_data &array_value::get_data(void) { return data; }
 
