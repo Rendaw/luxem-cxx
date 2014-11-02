@@ -30,37 +30,45 @@ raw_writer::~raw_writer(void)
 	luxem_rawwrite_destroy(context);
 }
 
-void raw_writer::set_pretty(char spacer, size_t multiple)
+raw_writer &raw_writer::set_pretty(char spacer, size_t multiple)
 {
 	luxem_rawwrite_set_pretty(context, spacer, multiple);
+	return *this;
 }
 
-void raw_writer::object_begin(void) { check_error(luxem_rawwrite_object_begin(context)); }
+raw_writer &raw_writer::object_begin(void) 
+	{ check_error(luxem_rawwrite_object_begin(context)); return *this; }
 
-void raw_writer::object_end(void) { check_error(luxem_rawwrite_object_end(context)); }
+raw_writer &raw_writer::object_end(void) 
+	{ check_error(luxem_rawwrite_object_end(context)); return *this; }
 
-void raw_writer::array_begin(void) { check_error(luxem_rawwrite_array_begin(context)); }
+raw_writer &raw_writer::array_begin(void) 
+	{ check_error(luxem_rawwrite_array_begin(context)); return *this; }
 
-void raw_writer::array_end(void) { check_error(luxem_rawwrite_array_end(context)); }
+raw_writer &raw_writer::array_end(void) 
+	{ check_error(luxem_rawwrite_array_end(context)); return *this; }
 
-void raw_writer::key(std::string const &data)
+raw_writer &raw_writer::key(std::string const &data)
 {
 	luxem_string_t temp{data.c_str(), data.length()};
 	check_error(luxem_rawwrite_key(context, &temp));
+	return *this;
 }
 
-void raw_writer::type(std::string const &data)
+raw_writer &raw_writer::type(std::string const &data)
 {
 	luxem_string_t temp{data.c_str(), data.length()};
 	check_error(luxem_rawwrite_type(context, &temp));
+	return *this;
 }
 
-void raw_writer::primitive(std::string const &data) 
+raw_writer &raw_writer::primitive(std::string const &data) 
 {
 	luxem_string_t temp{data.c_str(), data.length()};
 	check_error(luxem_rawwrite_primitive(context, &temp));
+	return *this;
 }
-	
+
 std::string raw_writer::dump(void) const
 {
 	auto temp = luxem_rawwrite_buffer_render(context);
@@ -123,6 +131,30 @@ struct object_stackable : writer::stackable
 };
 
 writer::stackable::~stackable(void) {}
+	
+writer &writer::set_pretty(char spacer, size_t multiple) 
+	{ raw_writer::set_pretty(spacer, multiple); return *this; }
+
+writer &writer::object_begin(void)
+	{ raw_writer::object_begin(); return *this; }
+
+writer &writer::object_end(void)
+	{ raw_writer::object_end(); return *this; }
+
+writer &writer::array_begin(void)
+	{ raw_writer::array_begin(); return *this; }
+
+writer &writer::array_end(void)
+	{ raw_writer::array_end(); return *this; }
+
+writer &writer::key(std::string const &data)
+	{ raw_writer::key(data); return *this; }
+
+writer &writer::type(std::string const &data)
+	{ raw_writer::type(data); return *this; }
+
+writer &writer::primitive(std::string const &data)
+	{ raw_writer::primitive(data); return *this; }
 
 writer &writer::value(luxem::value const &data)
 {
@@ -135,6 +167,12 @@ writer &writer::value(luxem::value const &data)
 	}
 	return *this;
 }
+	
+writer &writer::value(char const *data)
+	{ return value(primitive_value(data)); }
+
+writer &writer::value(std::string const &type, char const *data)
+	{ return value(primitive_value(type, data)); }
 
 writer &writer::value(bool data) 
 	{ return value(primitive_value(data)); }

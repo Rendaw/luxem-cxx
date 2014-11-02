@@ -20,15 +20,15 @@ struct raw_writer
 	raw_writer &operator =(raw_writer &&other) = delete;
 	~raw_writer(void);
 
-	void set_pretty(char spacer = '\t', size_t multiple = 1);
+	raw_writer &set_pretty(char spacer = '\t', size_t multiple = 1);
 
-	void object_begin(void);
-	void object_end(void);
-	void array_begin(void);
-	void array_end(void);
-	void key(std::string const &data);
-	void type(std::string const &data);
-	void primitive(std::string const &data);
+	raw_writer &object_begin(void);
+	raw_writer &object_end(void);
+	raw_writer &array_begin(void);
+	raw_writer &array_end(void);
+	raw_writer &key(std::string const &data);
+	raw_writer &type(std::string const &data);
+	raw_writer &primitive(std::string const &data);
 
 	std::string dump(void) const;
 
@@ -42,8 +42,20 @@ struct raw_writer
 struct writer : raw_writer
 {
 	using raw_writer::raw_writer;
+	
+	writer &set_pretty(char spacer = '\t', size_t multiple = 1);
+
+	writer &object_begin(void);
+	writer &object_end(void);
+	writer &array_begin(void);
+	writer &array_end(void);
+	writer &key(std::string const &data);
+	writer &type(std::string const &data);
+	writer &primitive(std::string const &data);
 
 	writer &value(luxem::value const &data);
+	writer &value(char const *data);
+	writer &value(std::string const &type, char const *data);
 	writer &value(bool data);
 	writer &value(std::string const &type, bool data);
 	writer &value(int data);

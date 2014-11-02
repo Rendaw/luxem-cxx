@@ -3,6 +3,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <list>
+#include <algorithm>
+#include <utility>
 
 extern "C"
 {
@@ -38,6 +40,20 @@ template <typename type> std::string convert_from(type const &data)
 	std::stringstream render;
 	render << data;
 	return render.str();
+}
+
+template <> bool convert_to(std::string const &data)
+{
+	auto lower = data;
+	std::transform(lower.begin(), lower.end(), lower.begin(), ::toupper);
+	return (lower != "0") &&
+		(lower != "false") &&
+		(lower != "no");
+}
+
+template <> std::string convert_from(bool const &data)
+{
+	return data ? "true" : "false";
 }
 
 std::vector<uint8_t> convert_to(subencodings::ascii16, std::string const &data)
@@ -76,6 +92,11 @@ primitive_value::primitive_value(std::string const &type, std::string const &dat
 	value(type), data(data) {}
 primitive_value::primitive_value(std::string &&type, std::string &&data) :
 	value(std::move(type)), data(std::move(data)) {}
+	
+primitive_value::primitive_value(char const *data) :
+	data(data) {}
+primitive_value::primitive_value(std::string const &type, char const *data) :
+	value(type), data(data) {}
 	
 primitive_value::primitive_value(bool data) :
 	data(convert_from<bool>(data)) {}

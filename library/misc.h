@@ -5,7 +5,7 @@
 
 namespace luxem
 {
-
+	
 struct finally
 {
 	std::function<void(void)> callback;

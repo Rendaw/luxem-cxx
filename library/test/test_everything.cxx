@@ -1,3 +1,5 @@
+#undef NDEBUG
+
 #include "../read.h"
 #include "../write.h"
 
@@ -33,7 +35,7 @@ void compare_value(luxem::value const &got, luxem::value const &expected)
 			compare_value(*got_pair->second, *expected_pair.second);
 		}
 	}
-	if (expected.is<luxem::array_value>())
+	else if (expected.is<luxem::array_value>())
 	{
 		auto expected_array = expected.as<luxem::array_value>();
 		auto got_array = got.as<luxem::array_value>();
@@ -41,7 +43,7 @@ void compare_value(luxem::value const &got, luxem::value const &expected)
 		for (size_t index = 0; index < expected_array.get_data().size(); ++index)
 			compare_value(*got_array.get_data()[index], *expected_array.get_data()[index]);
 	}
-	if (expected.is<luxem::primitive_value>())
+	else if (expected.is<luxem::primitive_value>())
 	{
 		auto expected_primitive = expected.as<luxem::primitive_value>();
 		auto got_primitive = got.as<luxem::primitive_value>();
@@ -57,6 +59,16 @@ int main(void)
 	assert2(luxem::writer().value(4.7).dump(), std::string("4.7,"));
 	assert2(luxem::writer().value(4.7f).dump(), std::string("4.7,"));
 	assert2(luxem::writer().value(false).dump(), std::string("false,"));
+	assert2(luxem::writer().value(true).dump(), std::string("true,"));
+	assert2(luxem::writer().value("hi").dump(), std::string("hi,"));
+	assert2(luxem::writer().value("int", 99).dump(), std::string("(int)99,"));
+	
+	{
+		luxem::reader reader;
+		reader.element([](std::shared_ptr<luxem::value> &&data) 
+			{ compare_value(*data, luxem::primitive_value{"int", 99}); });
+		reader.feed("(int)99,");
+	}
 
 	auto input = std::make_shared<luxem::array_value>(luxem::ad{
 		std::make_shared<luxem::primitive_value>(-4),

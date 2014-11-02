@@ -252,7 +252,6 @@ static void build_struct(
 	}
 	else
 	{
-		assert(data->is<primitive_value>());
 		callback(std::move(data));
 	}
 }
@@ -278,7 +277,7 @@ void reader::object_context::build_struct(
 	std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess)
 {
 	assert(base.callbacks.find(key) == base.callbacks.end());
-	base.callbacks.emplace(key, [callback = std::move(callback), key, &preprocess](std::shared_ptr<value> &&data) mutable
+	base.callbacks.emplace(key, [callback = std::move(callback), key, preprocess](std::shared_ptr<value> &&data) mutable
 	{ 
 		if (preprocess) preprocess(key, data);
 		luxem::build_struct(std::move(data), std::move(callback), preprocess); 
@@ -316,7 +315,7 @@ void reader::array_context::build_struct(
 	std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess)
 {
 	assert(!base.callback);
-	base.callback = [callback = std::move(callback), &preprocess](std::shared_ptr<value> &&data) mutable
+	base.callback = [callback = std::move(callback), preprocess](std::shared_ptr<value> &&data) mutable
 	{ 
 		if (preprocess) preprocess({}, data);
 		luxem::build_struct(std::move(data), std::move(callback), preprocess); 
@@ -334,18 +333,14 @@ reader::reader(void) :
 		[this]() 
 		{
 			auto object = std::make_unique<object_stackable>();
-			process(has_type ?
-				std::make_unique<object_context>(std::move(current_type), *object) :
-				std::make_unique<object_context>(*object));
+			process(std::make_unique<object_context>(*object));
 			stack.emplace_back(std::move(object));
 		},
 		[this]() { pop(); },
 		[this]() 
 		{
 			auto array = std::make_unique<array_stackable>();
-			process(has_type ?
-				std::make_unique<array_context>(std::move(current_type), *array) :
-				std::make_unique<array_context>(*array));
+			process(std::make_unique<array_context>(*array));
 			stack.emplace_back(std::move(array));
 		},
 		[this]() { pop(); },
@@ -406,6 +401,7 @@ void reader::process(std::shared_ptr<value> &&data)
 {
 	assert(!stack.empty());
 	if (stack.empty()) return;
+	if (has_type) data->set_type(std::move(current_type));
 	stack.back()->process(std::move(data), std::move(current_key));
 	has_type = false;
 	has_key = false;

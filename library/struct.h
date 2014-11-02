@@ -58,6 +58,8 @@ struct primitive_value : value
 	primitive_value(std::string const &type, std::string const &data);
 	primitive_value(std::string &&type, std::string &&data);
 
+	primitive_value(char const *data);
+	primitive_value(std::string const &type, char const *data);
 	primitive_value(bool data);
 	primitive_value(std::string const &type, bool data);
 	primitive_value(int data);
