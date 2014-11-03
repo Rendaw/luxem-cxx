@@ -26,6 +26,9 @@ struct value
 
 	template <typename type> bool is(void) const 
 		{ return typeid(*this) == typeid(type); }
+	
+	template <typename type> bool is_derived(void) const 
+		{ return dynamic_cast<type const *>(this); }
 
 	template <typename type> type &as(void) 
 	{ 
@@ -35,11 +38,41 @@ struct value
 			message << "Expected " << type::name << ", found " << get_name();
 			throw std::runtime_error(message.str());
 		}
-		return *reinterpret_cast<type *>(this); 
+		return *static_cast<type *>(this); 
 	}
 
 	template <typename type> type const &as(void) const 
-		{ assert(is<type>()); return *reinterpret_cast<type const *>(this); }
+	{ 
+		if (!is<type>()) 
+		{
+			std::stringstream message;
+			message << "Expected " << type::name << ", found " << get_name();
+			throw std::runtime_error(message.str());
+		}
+		return *static_cast<type const *>(this); 
+	}
+
+	template <typename type> type &as_derived(void) 
+	{ 
+		if (!is_derived<type>()) 
+		{
+			std::stringstream message;
+			message << "Expected subtype of " << type::name << ", found " << get_name();
+			throw std::runtime_error(message.str());
+		}
+		return *static_cast<type *>(this); 
+	}
+	
+	template <typename type> type const &as_derived(void) const
+	{ 
+		if (!is_derived<type>()) 
+		{
+			std::stringstream message;
+			message << "Expected subtype of " << type::name << ", found " << get_name();
+			throw std::runtime_error(message.str());
+		}
+		return *static_cast<type const *>(this); 
+	}
 
 	private:
 		std::string type;

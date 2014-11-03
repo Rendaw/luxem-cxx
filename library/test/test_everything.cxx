@@ -62,12 +62,32 @@ int main(void)
 	assert2(luxem::writer().value(true).dump(), std::string("true,"));
 	assert2(luxem::writer().value("hi").dump(), std::string("hi,"));
 	assert2(luxem::writer().value("int", 99).dump(), std::string("(int)99,"));
+
+	{
+		bool done = false;
+		luxem::reader reader;
+		reader.element([&done](std::shared_ptr<luxem::value> &&data) 
+			{ assert2(data->as<luxem::primitive_value>().get_bool(), true); done = true; });
+		reader.feed("true");
+		assert(done);
+	}
 	
 	{
+		bool done = false;
 		luxem::reader reader;
-		reader.element([](std::shared_ptr<luxem::value> &&data) 
-			{ compare_value(*data, luxem::primitive_value{"int", 99}); });
+		reader.element([&done](std::shared_ptr<luxem::value> &&data) 
+			{ assert2(data->as<luxem::primitive_value>().get_bool(), false); done = true; });
+		reader.feed("false");
+		assert(done);
+	}
+	
+	{
+		bool done = false;
+		luxem::reader reader;
+		reader.element([&done](std::shared_ptr<luxem::value> &&data) 
+			{ compare_value(*data, luxem::primitive_value{"int", 99}); done = true; });
 		reader.feed("(int)99,");
+		assert(done);
 	}
 
 	auto input = std::make_shared<luxem::array_value>(luxem::ad{

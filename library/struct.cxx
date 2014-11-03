@@ -42,16 +42,16 @@ template <typename type> std::string convert_from(type const &data)
 	return render.str();
 }
 
-template <> bool convert_to(std::string const &data)
+bool convert_to_bool(std::string const &data)
 {
 	auto lower = data;
-	std::transform(lower.begin(), lower.end(), lower.begin(), ::toupper);
+	std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 	return (lower != "0") &&
 		(lower != "false") &&
 		(lower != "no");
 }
 
-template <> std::string convert_from(bool const &data)
+std::string convert_from_bool(bool const &data)
 {
 	return data ? "true" : "false";
 }
@@ -99,9 +99,9 @@ primitive_value::primitive_value(std::string const &type, char const *data) :
 	value(type), data(data) {}
 	
 primitive_value::primitive_value(bool data) :
-	data(convert_from<bool>(data)) {}
+	data(convert_from_bool(data)) {}
 primitive_value::primitive_value(std::string const &type, bool data) :
-	value(type), data(convert_from<bool>(data)) {}
+	value(type), data(convert_from_bool(data)) {}
 
 primitive_value::primitive_value(int data) :
 	data(convert_from<int>(data)) {}
@@ -134,7 +134,7 @@ std::string const &primitive_value::get_primitive(void) const
 	{ return data; }
 
 bool primitive_value::get_bool(void) const 
-	{ return convert_to<bool>(data); }
+	{ return convert_to_bool(data); }
 
 int primitive_value::get_int(void) const 
 	{ return convert_to<int>(data); }
