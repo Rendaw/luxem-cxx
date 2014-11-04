@@ -129,6 +129,9 @@ primitive::primitive(subencodings::ascii16, std::vector<uint8_t> const &data) :
 	data(convert_from(subencodings::ascii16{}, data)) {}
 primitive::primitive(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data) :
 	value(type), data(convert_from(subencodings::ascii16{}, data)) {}
+
+void primitive::set(std::string const &data) 
+	{ this->data = data; }
 	
 void primitive::set(char const *data) 
 	{ this->data = data; }

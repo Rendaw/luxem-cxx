@@ -110,13 +110,14 @@ struct primitive : value
 	primitive(subencodings::ascii16, std::vector<uint8_t> const &data);
 	primitive(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data);
 	
-	set(char const *data);
-	set(bool data);
-	set(int data);
-	set(unsigned int data);
-	set(float data);
-	set(double data);
-	set(subencodings::ascii16, std::vector<uint8_t> const &data);
+	void set(std::string const &data);
+	void set(char const *data);
+	void set(bool data);
+	void set(int data);
+	void set(unsigned int data);
+	void set(float data);
+	void set(double data);
+	void set(subencodings::ascii16, std::vector<uint8_t> const &data);
 
 	std::string const &get_primitive(void) const;
 	bool get_bool(void) const;
@@ -128,7 +129,7 @@ struct primitive : value
 	std::vector<uint8_t> get_ascii16(void) const;
 
 	private:
-		std::string const data;
+		std::string data;
 };
 
 struct object : value
