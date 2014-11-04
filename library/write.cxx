@@ -91,10 +91,10 @@ void raw_writer::check_error(bool succeeded)
 
 struct array_stackable : writer::stackable
 {
-	array_value const &data;
-	array_value::array_data::const_iterator iter;
+	array const &data;
+	array::array_data::const_iterator iter;
 
-	array_stackable(array_value const &data) : data(data), iter(data.get_data().begin()) { }
+	array_stackable(array const &data) : data(data), iter(data.get_data().begin()) { }
 
 	bool step(writer &writer, std::list<std::unique_ptr<stackable>> &stack) override
 	{
@@ -111,10 +111,10 @@ struct array_stackable : writer::stackable
 
 struct object_stackable : writer::stackable
 {
-	object_value const &data;
-	object_value::object_data::const_iterator iter;
+	object const &data;
+	object::object_data::const_iterator iter;
 
-	object_stackable(object_value const &data) : data(data), iter(data.get_data().begin()) { }
+	object_stackable(object const &data) : data(data), iter(data.get_data().begin()) { }
 
 	bool step(writer &writer, std::list<std::unique_ptr<stackable>> &stack) override
 	{
@@ -169,62 +169,62 @@ writer &writer::value(luxem::value const &data)
 }
 	
 writer &writer::value(char const *data)
-	{ return value(primitive_value(data)); }
+	{ return value(luxem::primitive(data)); }
 
 writer &writer::value(std::string const &type, char const *data)
-	{ return value(primitive_value(type, data)); }
+	{ return value(luxem::primitive(type, data)); }
 
 writer &writer::value(bool data) 
-	{ return value(primitive_value(data)); }
+	{ return value(luxem::primitive(data)); }
 
 writer &writer::value(std::string const &type, bool data)
-	{ return value(primitive_value(type, data)); }
+	{ return value(luxem::primitive(type, data)); }
 
 writer &writer::value(int data) 
-	{ return value(primitive_value(data)); }
+	{ return value(luxem::primitive(data)); }
 
 writer &writer::value(std::string const &type, int data)
-	{ return value(primitive_value(type, data)); }
+	{ return value(luxem::primitive(type, data)); }
 
 writer &writer::value(unsigned int data) 
-	{ return value(primitive_value(data)); }
+	{ return value(luxem::primitive(data)); }
 
 writer &writer::value(std::string const &type, unsigned int data)
-	{ return value(primitive_value(type, data)); }
+	{ return value(luxem::primitive(type, data)); }
 
 writer &writer::value(float data) 
-	{ return value(primitive_value(data)); }
+	{ return value(luxem::primitive(data)); }
 
 writer &writer::value(std::string const &type, float data)
-	{ return value(primitive_value(type, data)); }
+	{ return value(luxem::primitive(type, data)); }
 
 writer &writer::value(double data) 
-	{ return value(primitive_value(data)); }
+	{ return value(luxem::primitive(data)); }
 
 writer &writer::value(std::string const &type, double data)
-	{ return value(primitive_value(type, data)); }
+	{ return value(luxem::primitive(type, data)); }
 
 writer &writer::value(subencodings::ascii16, std::vector<uint8_t> const &data) 
-	{ return value(primitive_value(subencodings::ascii16{}, data)); }
+	{ return value(luxem::primitive(subencodings::ascii16{}, data)); }
 
 writer &writer::value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data)
-	{ return value(primitive_value(type, subencodings::ascii16{}, data)); }
+	{ return value(luxem::primitive(type, subencodings::ascii16{}, data)); }
 
 void writer::process(std::list<std::unique_ptr<writer::stackable>> &stack, luxem::value const &data)
 {
 	if (data.has_type()) type(data.get_type());
-	if (data.is<array_value>())
+	if (data.is<array>())
 	{
 		array_begin();
-		stack.push_back(std::make_unique<array_stackable>(data.as<array_value>()));
+		stack.push_back(std::make_unique<array_stackable>(data.as<array>()));
 	}
-	else if (data.is<object_value>())
+	else if (data.is<object>())
 	{
 		object_begin();
-		stack.push_back(std::make_unique<object_stackable>(data.as<object_value>()));
+		stack.push_back(std::make_unique<object_stackable>(data.as<object>()));
 	}
-	else if (data.is<primitive_value>())
-		primitive(data.as<primitive_value>().get_primitive());
+	else if (data.is<luxem::primitive>())
+		primitive(data.as<luxem::primitive>().get_primitive());
 	else 
 	{
 		std::stringstream message;

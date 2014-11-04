@@ -82,109 +82,130 @@ std::string convert_from(subencodings::ascii16, std::vector<uint8_t> const &data
 	return out;
 }
 
-std::string const primitive_value::name("primitive_value");
+std::string const primitive::name("primitive");
 
-primitive_value::primitive_value(std::string const &data) :
+std::string const &primitive::get_name(void) const { return name; }
+
+primitive::primitive(std::string const &data) :
 	data(data) {}
-primitive_value::primitive_value(std::string &&data) :
+primitive::primitive(std::string &&data) :
 	data(std::move(data)) {}
-primitive_value::primitive_value(std::string const &type, std::string const &data) :
+primitive::primitive(std::string const &type, std::string const &data) :
 	value(type), data(data) {}
-primitive_value::primitive_value(std::string &&type, std::string &&data) :
+primitive::primitive(std::string &&type, std::string &&data) :
 	value(std::move(type)), data(std::move(data)) {}
 	
-primitive_value::primitive_value(char const *data) :
+primitive::primitive(char const *data) :
 	data(data) {}
-primitive_value::primitive_value(std::string const &type, char const *data) :
+primitive::primitive(std::string const &type, char const *data) :
 	value(type), data(data) {}
 	
-primitive_value::primitive_value(bool data) :
+primitive::primitive(bool data) :
 	data(convert_from_bool(data)) {}
-primitive_value::primitive_value(std::string const &type, bool data) :
+primitive::primitive(std::string const &type, bool data) :
 	value(type), data(convert_from_bool(data)) {}
 
-primitive_value::primitive_value(int data) :
+primitive::primitive(int data) :
 	data(convert_from<int>(data)) {}
-primitive_value::primitive_value(std::string const &type, int data) :
+primitive::primitive(std::string const &type, int data) :
 	value(type), data(convert_from<int>(data)) {}
 
-primitive_value::primitive_value(unsigned int data) :
+primitive::primitive(unsigned int data) :
 	data(convert_from<unsigned int>(data)) {}
-primitive_value::primitive_value(std::string const &type, unsigned int data) :
+primitive::primitive(std::string const &type, unsigned int data) :
 	value(type), data(convert_from<unsigned int>(data)) {}
 
-primitive_value::primitive_value(float data) :
+primitive::primitive(float data) :
 	data(convert_from<float>(data)) {}
-primitive_value::primitive_value(std::string const &type, float data) :
+primitive::primitive(std::string const &type, float data) :
 	value(type), data(convert_from<float>(data)) {}
 
-primitive_value::primitive_value(double data) :
+primitive::primitive(double data) :
 	data(convert_from<double>(data)) {}
-primitive_value::primitive_value(std::string const &type, double data) :
+primitive::primitive(std::string const &type, double data) :
 	value(type), data(convert_from<double>(data)) {}
 
-primitive_value::primitive_value(subencodings::ascii16, std::vector<uint8_t> const &data) :
+primitive::primitive(subencodings::ascii16, std::vector<uint8_t> const &data) :
 	data(convert_from(subencodings::ascii16{}, data)) {}
-primitive_value::primitive_value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data) :
+primitive::primitive(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data) :
 	value(type), data(convert_from(subencodings::ascii16{}, data)) {}
 	
-std::string const &primitive_value::get_name(void) const { return name; }
+void primitive::set(char const *data) 
+	{ this->data = data; }
 
-std::string const &primitive_value::get_primitive(void) const 
+void primitive::set(bool data) 
+	{ this->data = convert_from_bool(data); }
+
+void primitive::set(int data) 
+	{ this->data = convert_from<int>(data); }
+
+void primitive::set(unsigned int data) 
+	{ this->data = convert_from<unsigned int>(data); }
+
+void primitive::set(float data) 
+	{ this->data = convert_from<float>(data); }
+
+void primitive::set(double data) 
+	{ this->data = convert_from<double>(data); }
+
+void primitive::set(subencodings::ascii16, std::vector<uint8_t> const &data) 
+	{ this->data = convert_from(subencodings::ascii16{}, data); }
+
+std::string const &primitive::get_primitive(void) const 
 	{ return data; }
 
-bool primitive_value::get_bool(void) const 
+bool primitive::get_bool(void) const 
 	{ return convert_to_bool(data); }
 
-int primitive_value::get_int(void) const 
+int primitive::get_int(void) const 
 	{ return convert_to<int>(data); }
 
-unsigned int primitive_value::get_uint(void) const 
+unsigned int primitive::get_uint(void) const 
 	{ return convert_to<unsigned int>(data); }
 
-float primitive_value::get_float(void) const 
+float primitive::get_float(void) const 
 	{ return convert_to<float>(data); }
 
-double primitive_value::get_double(void) const 
+double primitive::get_double(void) const 
 	{ return convert_to<double>(data); }
 
-std::string const &primitive_value::get_string(void) const 
+std::string const &primitive::get_string(void) const 
 	{ return data; }
 
-std::vector<uint8_t> primitive_value::get_ascii16(void) const 
+std::vector<uint8_t> primitive::get_ascii16(void) const 
 	{ return convert_to(subencodings::ascii16{}, data); }
 
-std::string const object_value::name("object_value");
+std::string const object::name("object");
 
-object_value::object_value(void) {}
+object::object(void) {}
 
-object_value::object_value(object_data &&data) : value(), data(std::move(data)) {}
+std::string const &object::get_name(void) const { return name; }
 
-object_value::object_value(std::string const &type, object_data &&data) : value(type), data(std::move(data)) {}
+object::object(object_data &&data) : value(), data(std::move(data)) {}
 
-object_value::object_value(std::string &&type, object_data &&data) : value(std::move(type)), data(std::move(data)) {}
+object::object(std::string const &type, object_data &&data) : value(type), data(std::move(data)) {}
 
-std::string const &object_value::get_name(void) const { return name; }
+object::object(std::string &&type, object_data &&data) : value(std::move(type)), data(std::move(data)) {}
 
-object_value::object_data &object_value::get_data(void) { return data; }
+object::object_data &object::get_data(void) { return data; }
 
-object_value::object_data const &object_value::get_data(void) const { return data; }
+object::object_data const &object::get_data(void) const { return data; }
 	
-std::string const array_value::name("array_value");
+std::string const array::name("array");
 
-array_value::array_value(void) {}
+std::string const &array::get_name(void) const { return name; }
 
-array_value::array_value(array_data &&data) : value(), data(std::move(data)) {}
+array::array(void) {}
 
-array_value::array_value(std::string const &type, array_data &&data) : value(type), data(std::move(data)) {}
+array::array(array_data &&data) : value(), data(std::move(data)) {}
 
-array_value::array_value(std::string &&type, array_data &&data) : value(std::move(type)), data(std::move(data)) {}
+array::array(std::string const &type, array_data &&data) : value(type), data(std::move(data)) {}
 
-std::string const &array_value::get_name(void) const { return name; }
+array::array(std::string &&type, array_data &&data) : value(std::move(type)), data(std::move(data)) {}
 
-array_value::array_data &array_value::get_data(void) { return data; }
+array::array_data &array::get_data(void) { return data; }
 
-array_value::array_data const &array_value::get_data(void) const { return data; }
+array::array_data const &array::get_data(void) const { return data; }
 
 template <typename callback_type> struct walk_stackable 
 {
@@ -218,14 +239,14 @@ template // The costs of DRY in c++
 {
 	callback(key, node);
 	if (!node) return;
-	if (node->template is<object_value>())
+	if (node->template is<object>())
 		stack.emplace_back(std::make_unique<object_walk_stackable<
 			node_type, 
-			callback_type>>(node->template as<object_value>()));
-	else if (node->template is<array_value>())
+			callback_type>>(node->template as<object>()));
+	else if (node->template is<array>())
 		stack.emplace_back(std::make_unique<array_walk_stackable<
 			node_type, 
-			callback_type>>(node->template as<array_value>()));
+			callback_type>>(node->template as<array>()));
 }
 
 template 
@@ -234,7 +255,7 @@ template
 	typename callback_type
 > struct object_walk_stackable : walk_stackable<callback_type>
 {
-	typename std::conditional<std::is_const<node_type>::value, object_value const, object_value>::type &node;
+	typename std::conditional<std::is_const<node_type>::value, object const, object>::type &node;
 	typename std::conditional<std::is_const<node_type>::value, od::const_iterator, od::iterator>::type iterator;
 
 	object_walk_stackable(decltype(node) &node) : node(node), iterator(node.get_data().begin()) {}
@@ -254,7 +275,7 @@ template
 	typename callback_type
 > struct array_walk_stackable : walk_stackable<callback_type>
 {
-	typename std::conditional<std::is_const<node_type>::value, array_value const, array_value>::type &node;
+	typename std::conditional<std::is_const<node_type>::value, array const, array>::type &node;
 	typename std::conditional<std::is_const<node_type>::value, ad::const_iterator, ad::iterator>::type iterator;
 
 	array_walk_stackable(decltype(node) &node) : node(node), iterator(node.get_data().begin()) {}
@@ -283,10 +304,10 @@ void walk(std::shared_ptr<value> &root, walk_callback const &callback)
 void walk(std::shared_ptr<value> const &root, const_walk_callback const &callback) 
 	{ walk_implementation(root, callback); }
 
-void walk(std::shared_ptr<object_value> const &root, const_walk_callback const &callback) 
+void walk(std::shared_ptr<object> const &root, const_walk_callback const &callback) 
 	{ walk_implementation(root, callback); }
 
-void walk(std::shared_ptr<array_value> const &root, const_walk_callback const &callback) 
+void walk(std::shared_ptr<array> const &root, const_walk_callback const &callback) 
 	{ walk_implementation(root, callback); }
 
 }

@@ -23,10 +23,10 @@ void compare_value(luxem::value const &got, luxem::value const &expected)
 {
 	assert2(got.has_type(), expected.has_type());
 	if (got.has_type()) assert2(got.get_type(), expected.get_type());
-	if (expected.is<luxem::object_value>())
+	if (expected.is<luxem::object>())
 	{
-		auto expected_object = expected.as<luxem::object_value>();
-		auto got_object = got.as<luxem::object_value>();
+		auto expected_object = expected.as<luxem::object>();
+		auto got_object = got.as<luxem::object>();
 		assert2(got_object.get_data().size(), expected_object.get_data().size());
 		for (auto &expected_pair : expected_object.get_data())
 		{
@@ -35,18 +35,18 @@ void compare_value(luxem::value const &got, luxem::value const &expected)
 			compare_value(*got_pair->second, *expected_pair.second);
 		}
 	}
-	else if (expected.is<luxem::array_value>())
+	else if (expected.is<luxem::array>())
 	{
-		auto expected_array = expected.as<luxem::array_value>();
-		auto got_array = got.as<luxem::array_value>();
+		auto expected_array = expected.as<luxem::array>();
+		auto got_array = got.as<luxem::array>();
 		assert2(got_array.get_data().size(), expected_array.get_data().size());
 		for (size_t index = 0; index < expected_array.get_data().size(); ++index)
 			compare_value(*got_array.get_data()[index], *expected_array.get_data()[index]);
 	}
-	else if (expected.is<luxem::primitive_value>())
+	else if (expected.is<luxem::primitive>())
 	{
-		auto expected_primitive = expected.as<luxem::primitive_value>();
-		auto got_primitive = got.as<luxem::primitive_value>();
+		auto expected_primitive = expected.as<luxem::primitive>();
+		auto got_primitive = got.as<luxem::primitive>();
 		assert2(got_primitive.get_primitive(), expected_primitive.get_primitive());
 	}
 	else assert(false);
@@ -67,7 +67,7 @@ int main(void)
 		bool done = false;
 		luxem::reader reader;
 		reader.element([&done](std::shared_ptr<luxem::value> &&data) 
-			{ assert2(data->as<luxem::primitive_value>().get_bool(), true); done = true; });
+			{ assert2(data->as<luxem::primitive>().get_bool(), true); done = true; });
 		reader.feed("true");
 		assert(done);
 	}
@@ -76,7 +76,7 @@ int main(void)
 		bool done = false;
 		luxem::reader reader;
 		reader.element([&done](std::shared_ptr<luxem::value> &&data) 
-			{ assert2(data->as<luxem::primitive_value>().get_bool(), false); done = true; });
+			{ assert2(data->as<luxem::primitive>().get_bool(), false); done = true; });
 		reader.feed("false");
 		assert(done);
 	}
@@ -85,35 +85,35 @@ int main(void)
 		bool done = false;
 		luxem::reader reader;
 		reader.element([&done](std::shared_ptr<luxem::value> &&data) 
-			{ compare_value(*data, luxem::primitive_value{"int", 99}); done = true; });
+			{ compare_value(*data, luxem::primitive{"int", 99}); done = true; });
 		reader.feed("(int)99,");
 		assert(done);
 	}
 
-	auto input = std::make_shared<luxem::array_value>(luxem::ad{
-		std::make_shared<luxem::primitive_value>(-4),
-		std::make_shared<luxem::primitive_value>(23u),
-		std::make_shared<luxem::primitive_value>(12.7f),
-		std::make_shared<luxem::primitive_value>(29.3),
-		std::make_shared<luxem::primitive_value>(true),
-		std::make_shared<luxem::primitive_value>("hog"),
-		std::make_shared<luxem::primitive_value>("int", 4),
-		std::make_shared<luxem::array_value>(),
-		std::make_shared<luxem::array_value>(luxem::ad{
-			std::make_shared<luxem::primitive_value>("programming language")
+	auto input = std::make_shared<luxem::array>(luxem::ad{
+		std::make_shared<luxem::primitive>(-4),
+		std::make_shared<luxem::primitive>(23u),
+		std::make_shared<luxem::primitive>(12.7f),
+		std::make_shared<luxem::primitive>(29.3),
+		std::make_shared<luxem::primitive>(true),
+		std::make_shared<luxem::primitive>("hog"),
+		std::make_shared<luxem::primitive>("int", 4),
+		std::make_shared<luxem::array>(),
+		std::make_shared<luxem::array>(luxem::ad{
+			std::make_shared<luxem::primitive>("programming language")
 		}),
-		std::make_shared<luxem::array_value>("peanut", luxem::ad{
-			std::make_shared<luxem::primitive_value>("equality"),
-			std::make_shared<luxem::primitive_value>(999)
+		std::make_shared<luxem::array>("peanut", luxem::ad{
+			std::make_shared<luxem::primitive>("equality"),
+			std::make_shared<luxem::primitive>(999)
 		}),
-		std::make_shared<luxem::object_value>(),
-		std::make_shared<luxem::object_value>(luxem::od{
-			{"key", std::make_shared<luxem::primitive_value>("value")}
+		std::make_shared<luxem::object>(),
+		std::make_shared<luxem::object>(luxem::od{
+			{"key", std::make_shared<luxem::primitive>("value")}
 		}),
-		std::make_shared<luxem::object_value>("horse", luxem::od{
-			{"equestrianism", std::make_shared<luxem::primitive_value>(true)}
+		std::make_shared<luxem::object>("horse", luxem::od{
+			{"equestrianism", std::make_shared<luxem::primitive>(true)}
 		}),
-		std::make_shared<luxem::primitive_value>(luxem::subencodings::ascii16{}, std::vector<uint8_t>{1, 12, 255})
+		std::make_shared<luxem::primitive>(luxem::subencodings::ascii16{}, std::vector<uint8_t>{1, 12, 255})
 	});
 	compare_value(*input, *input);
 	std::shared_ptr<luxem::value> output;

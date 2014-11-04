@@ -83,31 +83,40 @@ struct subencodings
 	struct ascii16 {};
 };
 
-struct primitive_value : value
+struct primitive : value
 {
 	using value::value;
-	primitive_value(std::string const &data);
-	primitive_value(std::string &&data);
-	primitive_value(std::string const &type, std::string const &data);
-	primitive_value(std::string &&type, std::string &&data);
-
-	primitive_value(char const *data);
-	primitive_value(std::string const &type, char const *data);
-	primitive_value(bool data);
-	primitive_value(std::string const &type, bool data);
-	primitive_value(int data);
-	primitive_value(std::string const &type, int data);
-	primitive_value(unsigned int data);
-	primitive_value(std::string const &type, unsigned int data);
-	primitive_value(float data);
-	primitive_value(std::string const &type, float data);
-	primitive_value(double data);
-	primitive_value(std::string const &type, double data);
-	primitive_value(subencodings::ascii16, std::vector<uint8_t> const &data);
-	primitive_value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data);
 
 	static std::string const name;
 	std::string const &get_name(void) const override;
+
+	primitive(std::string const &data);
+	primitive(std::string &&data);
+	primitive(std::string const &type, std::string const &data);
+	primitive(std::string &&type, std::string &&data);
+
+	primitive(char const *data);
+	primitive(std::string const &type, char const *data);
+	primitive(bool data);
+	primitive(std::string const &type, bool data);
+	primitive(int data);
+	primitive(std::string const &type, int data);
+	primitive(unsigned int data);
+	primitive(std::string const &type, unsigned int data);
+	primitive(float data);
+	primitive(std::string const &type, float data);
+	primitive(double data);
+	primitive(std::string const &type, double data);
+	primitive(subencodings::ascii16, std::vector<uint8_t> const &data);
+	primitive(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data);
+	
+	set(char const *data);
+	set(bool data);
+	set(int data);
+	set(unsigned int data);
+	set(float data);
+	set(double data);
+	set(subencodings::ascii16, std::vector<uint8_t> const &data);
 
 	std::string const &get_primitive(void) const;
 	bool get_bool(void) const;
@@ -122,14 +131,14 @@ struct primitive_value : value
 		std::string const data;
 };
 
-struct object_value : value
+struct object : value
 {
 	typedef std::map<std::string, std::shared_ptr<value>> object_data;
 
-	object_value(void);
-	object_value(object_data &&data);
-	object_value(std::string const &type, object_data &&data);
-	object_value(std::string &&type, object_data &&data);
+	object(void);
+	object(object_data &&data);
+	object(std::string const &type, object_data &&data);
+	object(std::string &&type, object_data &&data);
 	
 	static std::string const name;
 	std::string const &get_name(void) const override;
@@ -141,16 +150,16 @@ struct object_value : value
 		object_data data;
 };
 
-typedef object_value::object_data od;
+typedef object::object_data od;
 
-struct array_value : value
+struct array : value
 {
 	typedef std::vector<std::shared_ptr<value>> array_data;
 
-	array_value(void);
-	array_value(array_data &&data);
-	array_value(std::string const &type, array_data &&data);
-	array_value(std::string &&type, array_data &&data);
+	array(void);
+	array(array_data &&data);
+	array(std::string const &type, array_data &&data);
+	array(std::string &&type, array_data &&data);
 	
 	static std::string const name;
 	std::string const &get_name(void) const override;
@@ -162,7 +171,7 @@ struct array_value : value
 		array_data data;
 };
 
-typedef array_value::array_data ad;
+typedef array::array_data ad;
 
 typedef std::function
 <
@@ -176,8 +185,8 @@ typedef std::function
 
 void walk(std::shared_ptr<value> &root, walk_callback const &callback);
 void walk(std::shared_ptr<value> const &root, const_walk_callback const &callback);
-void walk(std::shared_ptr<object_value> const &root, const_walk_callback const &callback);
-void walk(std::shared_ptr<array_value> const &root, const_walk_callback const &callback);
+void walk(std::shared_ptr<object> const &root, const_walk_callback const &callback);
+void walk(std::shared_ptr<array> const &root, const_walk_callback const &callback);
 
 }
 

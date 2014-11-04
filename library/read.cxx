@@ -16,15 +16,6 @@ static char cxx_error_token;
 namespace luxem
 {
 
-/*static luxem_bool_t translate_object_begin(luxem_rawread_context_t *, void *); // ...
-static luxem_bool_t translate_object_end(luxem_rawread_context_t *, void *);
-static luxem_bool_t translate_array_begin(luxem_rawread_context_t *, void *);
-static luxem_bool_t translate_array_end(luxem_rawread_context_t *, void *);
-static luxem_bool_t translate_key(luxem_rawread_context_t *, void *, luxem_string_t const *);
-static luxem_bool_t translate_type(luxem_rawread_context_t *, void *, luxem_string_t const *);
-static luxem_bool_t translate_primitive(luxem_rawread_context_t *, void *, luxem_string_t const *);
-static void throw_feed_error(raw_reader &);*/
-
 static luxem_bool_t translate_object_begin(luxem_rawread_context_t *context, void *user_data)
 {
 	raw_reader &reader = *reinterpret_cast<raw_reader *>(user_data);
@@ -210,9 +201,9 @@ static void build_struct(
 	{
 		auto object_context = data->as<reader::object_context>();
 
-		std::shared_ptr<object_value> out;
-		if (data->has_type()) out = std::make_shared<object_value>(data->get_type(), od{});
-		else out = std::make_shared<object_value>();
+		std::shared_ptr<object> out;
+		if (data->has_type()) out = std::make_shared<object>(data->get_type(), od{});
+		else out = std::make_shared<object>();
 
 		object_context.passthrough([out, &preprocess](std::string &&key, std::shared_ptr<value> &&data) 
 		{ 
@@ -232,9 +223,9 @@ static void build_struct(
 	{
 		auto array_context = data->as<reader::array_context>();
 
-		std::shared_ptr<array_value> out;
-		if (data->has_type()) out = std::make_shared<array_value>(data->get_type(), ad{});
-		else out = std::make_shared<array_value>();
+		std::shared_ptr<array> out;
+		if (data->has_type()) out = std::make_shared<array>(data->get_type(), ad{});
+		else out = std::make_shared<array>();
 
 		array_context.element([out, &preprocess](std::shared_ptr<value> &&data) 
 		{ 
@@ -346,7 +337,7 @@ reader::reader(void) :
 		[this]() { pop(); },
 		[this](std::string &&data) { has_key = true; current_key = std::move(data); },
 		[this](std::string &&data) { has_type = true; current_type = std::move(data); },
-		[this](std::string &&data) { process(std::make_shared<primitive_value>(std::move(data))); }
+		[this](std::string &&data) { process(std::make_shared<luxem::primitive>(std::move(data))); }
 	), 
 	has_key(false),
 	has_type(false)
