@@ -418,7 +418,7 @@ template <typename ...argument_types>
 {
 	std::vector<std::shared_ptr<luxem::value>> out;
 	reader instance;
-	instance.element([&out](std::shared_ptr<luxem::value> &&data) { out.emplace_back(std::move(data)); });
+	instance.build_struct([&out](std::shared_ptr<luxem::value> &&data) { out.emplace_back(std::move(data)); });
 	instance.feed(std::forward<argument_types>(arguments)...);
 	return out;
 }

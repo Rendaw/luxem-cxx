@@ -223,7 +223,14 @@ void writer::process(std::list<std::unique_ptr<writer::stackable>> &stack, luxem
 		object_begin();
 		stack.push_back(std::make_unique<object_stackable>(data.as<object_value>()));
 	}
-	else primitive(data.as<primitive_value>().get_primitive());
+	else if (data.is<primitive_value>())
+		primitive(data.as<primitive_value>().get_primitive());
+	else 
+	{
+		std::stringstream message;
+		message << "Encountered unwritable type " << data.get_name() << " while trying to writing tree.";
+		throw std::runtime_error(message.str());
+	}
 }
 
 }
