@@ -309,7 +309,8 @@ void reader::array_context::build_struct(
 	base.callback = [callback = std::move(callback), preprocess](std::shared_ptr<value> &&data) mutable
 	{ 
 		if (preprocess) preprocess({}, data);
-		luxem::build_struct(std::move(data), std::move(callback), preprocess); 
+		auto callback_copy = callback;
+		luxem::build_struct(std::move(data), std::move(callback_copy), preprocess); 
 	};
 }
 
