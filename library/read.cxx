@@ -247,7 +247,6 @@ static void build_struct(
 	}
 }
 
-
 reader::object_context::object_context(std::string &&type, object_stackable &base) : value(type), base(base) {}
 
 reader::object_context::object_context(object_stackable &base) : base(base) {}
@@ -255,6 +254,8 @@ reader::object_context::object_context(object_stackable &base) : base(base) {}
 std::string const reader::object_context::name("object_context");
 
 std::string const &reader::object_context::get_name(void) const { return name; }
+		
+void reader::object_context::set_austerity_measures(bool on) { base.austerity_measures = on; }
 
 void reader::object_context::element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback)
 {
@@ -320,11 +321,11 @@ void reader::array_context::finally(std::function<void(void)> &&callback)
 	base.finish_callback = callback; 
 }
 
-reader::reader(void) : 
+reader::reader(bool austerity_measures) : 
 	raw_reader(
-		[this]() 
+		[this, austerity_measures]() 
 		{
-			auto object = std::make_unique<object_stackable>();
+			auto object = std::make_unique<object_stackable>(austerity_measures);
 			process(std::make_unique<object_context>(*object));
 			stack.emplace_back(std::move(object));
 		},
@@ -339,7 +340,7 @@ reader::reader(void) :
 		[this](std::string &&data) { has_key = true; current_key = std::move(data); },
 		[this](std::string &&data) { has_type = true; current_type = std::move(data); },
 		[this](std::string &&data) { process(std::make_shared<luxem::primitive>(std::move(data))); }
-	), 
+	),
 	has_key(false),
 	has_type(false)
 {
@@ -363,6 +364,8 @@ reader &reader::build_struct(std::function<void(std::shared_ptr<value> &&data)> 
 }
 			
 reader::stackable::~stackable(void) {}
+
+reader::object_stackable::object_stackable(bool austerity_measures) : austerity_measures(austerity_measures) {}
 		
 void reader::object_stackable::process(std::shared_ptr<value> &&data, std::string &&key)
 {
@@ -373,7 +376,15 @@ void reader::object_stackable::process(std::shared_ptr<value> &&data, std::strin
 	}
 	auto callback = callbacks.find(key);
 	if (callback == callbacks.end())
+	{
+		if (austerity_measures) 
+		{
+			std::stringstream message;
+			message << "No handler for object key '" << key << "'.";
+			throw std::runtime_error(message.str());
+		}
 		return;
+	}
 	callback->second(std::move(data));
 }
 

@@ -62,6 +62,8 @@ struct reader : raw_reader
 		static std::string const name;
 		std::string const &get_name(void) const override;
 
+		void set_austerity_measures(bool on);
+
 		void element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback);
 		void build_struct(
 			std::string const &key, 
@@ -96,7 +98,7 @@ struct reader : raw_reader
 			array_stackable &base;
 	};
 
-	reader(void);
+	reader(bool austerity_measures = true);
 	reader &element(std::function<void(std::shared_ptr<value> &&data)> &&callback);
 	reader &build_struct(std::function<void(std::shared_ptr<value> &&data)> &&callback);
 
@@ -110,11 +112,13 @@ struct reader : raw_reader
 
 		struct object_stackable : stackable
 		{
+			object_stackable(bool austerity_measures);
 			void process(std::shared_ptr<value> &&data, std::string &&key) override;
 			void finish(void) override;
 
 			friend struct object_context;
 			private:
+				bool austerity_measures;
 				std::function<void(std::string &&key, std::shared_ptr<value> &&data)> passthrough_callback;
 				std::function<void(void)> finish_callback;
 				std::map<std::string, std::function<void(std::shared_ptr<value> &&)>> callbacks;

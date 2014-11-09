@@ -362,8 +362,9 @@ int main(void)
 		<a name="luxem_reader"></a>
 		<h1>luxem::reader</h1>
 		<div class="method">
-			<h1>reader::reader(void)</h1>
+			<h1>reader::reader(bool austerity_measures = true)</h1>
 			<p>Overrides <span class="pre">raw_reader::raw_reader</span>.</p>
+			<p><span class="pre">austerity_measures</span> is the default austerity measure setting.  This can be overridden in specific object contexts.</p>
 		</div>
 		<div class="method">
 			<h1>reader &amp;reader::element(std::function&lt;void(std::shared_ptr&lt;value&gt; &amp;&amp;data)&gt; &amp;&amp;callback)</h1>
@@ -396,6 +397,10 @@ int main(void)
 		<a name="luxem_reader_object_context"></a>
 		<h1>luxem::reader::object_context</h1>
 		<p><span class="pre">object_context</span> objects are created by <span class="pre">luxem::reader</span> as part of non-struct read operations, and cannot be created elsewise.</p>
+		<div class="method">
+			<h1>void reader::object_context::set_austerity_measures(bool on)</h1>
+			<p>Enables or disables austerity measures for this context.  If austerity measures are enabled, an error will be raised if an object key is read which no callback exists.</p>
+		</div>
 		<div class="method">
 			<h1>void reader::object_context::element(std::string &amp;&amp;key, std::function&lt;void(std::shared_ptr&lt;value&gt; &amp;&amp;)&gt; &amp;&amp;callback)</h1>
 			<p><span class="pre">callback</span> will be called when <span class="pre">key</span> is encountered while reading the current object.  <span class="pre">callback</span> will be passed either a <span class="pre">primitive</span>, a <span class="pre">reader::object_context</span>, or a <span class="pre">reader::array_context</span>.</p>

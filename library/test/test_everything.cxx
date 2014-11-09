@@ -89,6 +89,25 @@ int main(void)
 		reader.feed("(int)99,");
 		assert(done);
 	}
+	
+	{
+		try
+		{
+			luxem::reader reader;
+			reader.feed("{key: bet_not}");
+			assert(false);
+		}
+		catch (...) {}
+	}
+	
+	{
+		try
+		{
+			luxem::reader reader(false);
+			reader.feed("{key: bet_not}");
+		}
+		catch (...) { assert(false); }
+	}
 
 	auto input = std::make_shared<luxem::array>(luxem::ad{
 		std::make_shared<luxem::primitive>(-4),
