@@ -89,6 +89,32 @@ int main(void)
 		reader.feed("(int)99,");
 		assert(done);
 	}
+
+	{
+		try
+		{
+			luxem::reader reader;
+			reader.element([](std::shared_ptr<luxem::value> &&data) 
+			{ 
+				data->as<luxem::reader::object_context>().build_struct(
+					"a", 
+					[](std::shared_ptr<luxem::value> &&) {});
+			});
+			reader.feed("{a: {}, a: {}}");
+			assert(false);
+		}
+		catch (...) {}
+	}
+	
+	{
+		try
+		{
+			luxem::reader reader;
+			reader.build_struct([](std::shared_ptr<luxem::value> &&data) {});
+			reader.feed("{}, {}");
+		}
+		catch (...) { assert(false); }
+	}
 	
 	{
 		try

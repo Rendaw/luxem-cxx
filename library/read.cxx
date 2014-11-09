@@ -260,7 +260,7 @@ void reader::object_context::set_austerity_measures(bool on) { base.austerity_me
 void reader::object_context::element(std::string &&key, std::function<void(std::shared_ptr<value> &&)> &&callback)
 {
 	assert(base.callbacks.find(key) == base.callbacks.end());
-	base.callbacks.emplace(key, callback);
+	base.callbacks.emplace(key, std::move(callback));
 }
 
 void reader::object_context::build_struct(
@@ -268,9 +268,16 @@ void reader::object_context::build_struct(
 	std::function<void(std::shared_ptr<value> &&data)> &&callback, 
 	std::function<void(std::string const &key, std::shared_ptr<value> &data)> const &preprocess)
 {
+	assert(callback); // FIXME throw?  This should really be statically checked, thanks c++
 	assert(base.callbacks.find(key) == base.callbacks.end());
 	base.callbacks.emplace(key, [callback = std::move(callback), key, preprocess](std::shared_ptr<value> &&data) mutable
 	{ 
+		if (!callback) 
+		{
+			std::stringstream message;
+			message << "Object key '" << key << "' encountered multiple times.";
+			throw std::runtime_error(message.str());
+		}
 		if (preprocess) preprocess(key, data);
 		luxem::build_struct(std::move(data), std::move(callback), preprocess); 
 	});
