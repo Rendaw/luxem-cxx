@@ -15,17 +15,19 @@ extern "C"
 namespace luxem
 {
 
-value::value(std::string const &type) : type(type) { }
+value::value(void) : typed(false) {}
 
-value::~value(void) { }
+value::value(std::string const &type) : typed(true), type(type) {}
 
-bool value::has_type(void) const { return !type.empty(); }
+value::~value(void) {}
+
+bool value::has_type(void) const { return typed; }
 
 std::string const &value::get_type(void) const { assert(has_type()); return type; }
 	
-void value::set_type(std::string const &type) { this->type = type; }
+void value::set_type(std::string const &type) { this->type = type; typed = true; }
 	
-void value::set_type(std::string &&type) { this->type = std::move(type); }
+void value::set_type(std::string &&type) { this->type = std::move(type); typed = true; }
 	
 template <typename type> type convert_to(std::string const &data)
 {

@@ -13,7 +13,8 @@ namespace luxem
 
 struct value
 {
-	value(std::string const &type = std::string());
+	value(void);
+	value(std::string const &type);
 	virtual ~value(void);
 
 	bool has_type(void) const;
@@ -75,6 +76,7 @@ struct value
 	}
 
 	private:
+		bool typed;
 		std::string type;
 };
 
