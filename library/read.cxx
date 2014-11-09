@@ -199,7 +199,7 @@ static void build_struct(
 {
 	if (data->is<reader::object_context>())
 	{
-		auto object_context = data->as<reader::object_context>();
+		auto &object_context = data->as<reader::object_context>();
 
 		std::shared_ptr<object> out;
 		if (data->has_type()) out = std::make_shared<object>(data->get_type(), od{});
@@ -221,7 +221,7 @@ static void build_struct(
 	}
 	else if (data->is<reader::array_context>())
 	{
-		auto array_context = data->as<reader::array_context>();
+		auto &array_context = data->as<reader::array_context>();
 
 		std::shared_ptr<array> out;
 		if (data->has_type()) out = std::make_shared<array>(data->get_type(), ad{});

@@ -53,6 +53,11 @@ struct reader : raw_reader
 	{
 		object_context(std::string &&type, object_stackable &base);
 		object_context(object_stackable &base);
+	
+		object_context(object_context const &) = delete;
+		object_context(object_context &&) = delete;
+		object_context &operator =(object_context const &) = delete;
+		object_context &operator =(object_context &&) = delete;
 
 		static std::string const name;
 		std::string const &get_name(void) const override;
@@ -73,6 +78,11 @@ struct reader : raw_reader
 	{
 		array_context(std::string &&type, array_stackable &base);
 		array_context(array_stackable &base);
+	
+		array_context(array_context const &) = delete;
+		array_context(array_context &&) = delete;
+		array_context &operator =(array_context const &) = delete;
+		array_context &operator =(array_context &&) = delete;
 
 		static std::string const name;
 		std::string const &get_name(void) const override;

@@ -111,6 +111,11 @@ struct primitive : value
 	primitive(std::string const &type, double data);
 	primitive(subencodings::ascii16, std::vector<uint8_t> const &data);
 	primitive(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data);
+
+	primitive(primitive const &) = delete;
+	primitive(primitive &&) = delete;
+	primitive &operator =(primitive const &) = delete;
+	primitive &operator =(primitive &&) = delete;
 	
 	void set(std::string const &data);
 	void set(char const *data);
@@ -143,6 +148,11 @@ struct object : value
 	object(std::string const &type, object_data &&data);
 	object(std::string &&type, object_data &&data);
 	
+	object(object const &) = delete;
+	object(object &&) = delete;
+	object &operator =(object const &) = delete;
+	object &operator =(object &&) = delete;
+	
 	static std::string const name;
 	std::string const &get_name(void) const override;
 
@@ -163,6 +173,11 @@ struct array : value
 	array(array_data &&data);
 	array(std::string const &type, array_data &&data);
 	array(std::string &&type, array_data &&data);
+	
+	array(array const &) = delete;
+	array(array &&) = delete;
+	array &operator =(array const &) = delete;
+	array &operator =(array &&) = delete;
 	
 	static std::string const name;
 	std::string const &get_name(void) const override;

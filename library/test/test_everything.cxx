@@ -25,8 +25,8 @@ void compare_value(luxem::value const &got, luxem::value const &expected)
 	if (got.has_type()) assert2(got.get_type(), expected.get_type());
 	if (expected.is<luxem::object>())
 	{
-		auto expected_object = expected.as<luxem::object>();
-		auto got_object = got.as<luxem::object>();
+		auto &expected_object = expected.as<luxem::object>();
+		auto &got_object = got.as<luxem::object>();
 		assert2(got_object.get_data().size(), expected_object.get_data().size());
 		for (auto &expected_pair : expected_object.get_data())
 		{
@@ -37,16 +37,16 @@ void compare_value(luxem::value const &got, luxem::value const &expected)
 	}
 	else if (expected.is<luxem::array>())
 	{
-		auto expected_array = expected.as<luxem::array>();
-		auto got_array = got.as<luxem::array>();
+		auto &expected_array = expected.as<luxem::array>();
+		auto &got_array = got.as<luxem::array>();
 		assert2(got_array.get_data().size(), expected_array.get_data().size());
 		for (size_t index = 0; index < expected_array.get_data().size(); ++index)
 			compare_value(*got_array.get_data()[index], *expected_array.get_data()[index]);
 	}
 	else if (expected.is<luxem::primitive>())
 	{
-		auto expected_primitive = expected.as<luxem::primitive>();
-		auto got_primitive = got.as<luxem::primitive>();
+		auto &expected_primitive = expected.as<luxem::primitive>();
+		auto &got_primitive = got.as<luxem::primitive>();
 		assert2(got_primitive.get_primitive(), expected_primitive.get_primitive());
 	}
 	else assert(false);
