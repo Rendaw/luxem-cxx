@@ -76,6 +76,28 @@ std::string raw_writer::dump(void) const
 	free(temp);
 	return out;
 }
+			
+raw_writer::object_guard::object_guard(object_guard &&other) : base(other.base) 
+	{ other.base = nullptr; }
+
+raw_writer::object_guard::object_guard(raw_writer &base) : base(&base) {}
+
+raw_writer::object_guard::~object_guard(void) 
+	{ if (base) base->object_end(); }
+
+raw_writer::array_guard::array_guard(array_guard &&other) : base(other.base) 
+	{ other.base = nullptr; }
+
+raw_writer::array_guard::array_guard(raw_writer &base) : base(&base) {}
+
+raw_writer::array_guard::~array_guard(void) 
+	{ if (base) base->array_end(); }
+
+raw_writer::object_guard raw_writer::scope_object(void) 
+	{ return object_guard(*this); }
+
+raw_writer::array_guard raw_writer::scope_array(void) 
+	{ return array_guard(*this); }
 
 void raw_writer::check_error(bool succeeded)
 {

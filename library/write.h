@@ -33,6 +33,31 @@ struct raw_writer
 	std::string dump(void) const;
 
 	private:
+		struct object_guard 
+		{ 
+			raw_writer *base; 
+			object_guard(object_guard &&other);
+			object_guard(raw_writer &base);
+			~object_guard(void);
+			object_guard(object_guard const &) = delete;
+			object_guard &operator =(object_guard const &) = delete;
+			object_guard &operator =(object_guard &&) = delete;
+		};
+		struct array_guard 
+		{ 
+			raw_writer *base; 
+			array_guard(array_guard &&other);
+			array_guard(raw_writer &base);
+			~array_guard(void);
+			array_guard(array_guard const &) = delete;
+			array_guard &operator =(array_guard const &) = delete;
+			array_guard &operator =(array_guard &&) = delete;
+		};
+	public:
+	object_guard scope_object(void);
+	array_guard scope_array(void);
+
+	private:
 		luxem_rawwrite_context_t *context;
 		std::function<void(std::string &&chunk)> callback;
 
