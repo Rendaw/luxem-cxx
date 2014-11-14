@@ -11,6 +11,30 @@
 namespace luxem
 {
 
+template <typename data_type> inline std::string to_string(data_type const &data)
+{
+	std::stringstream render;
+	render << data;
+	return render.str();
+}
+
+template <> inline std::string to_string<std::string>(std::string const &data)
+	{ return data; }
+
+template <> inline std::string to_string<bool>(bool const &data)
+{
+	return data ? "true" : "false";
+}
+
+std::string to_string_ascii16(uint8_t const *pointer, size_t const length);
+template <typename data_type> inline std::string to_string_ascii16(data_type const &data)
+{
+	return to_string_ascii16(
+		reinterpret_cast<uint8_t const *>(&data[0]), 
+		sizeof(typename data_type::value_type) * data.size()
+	);
+}
+
 struct value
 {
 	value(void);
@@ -92,44 +116,36 @@ struct primitive : value
 	static std::string const name;
 	std::string const &get_name(void) const override;
 
-	primitive(std::string const &data);
 	primitive(std::string &&data);
-	primitive(std::string const &type, std::string const &data);
 	primitive(std::string &&type, std::string &&data);
 
-	primitive(char const *data);
-	primitive(std::string const &type, char const *data);
-	primitive(bool data);
-	primitive(std::string const &type, bool data);
-	primitive(int data);
-	primitive(std::string const &type, int data);
-	primitive(unsigned int data);
-	primitive(std::string const &type, unsigned int data);
-	primitive(float data);
-	primitive(std::string const &type, float data);
-	primitive(double data);
-	primitive(std::string const &type, double data);
-	primitive(subencodings::ascii16, std::vector<uint8_t> const &data);
-	primitive(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data);
+	template <typename data_type> primitive(data_type const &data) :
+		data(to_string<data_type>(data))
+		{}
+	template <typename data_type> primitive(std::string const &type_name, data_type const &data) : 
+		value(type_name), data(to_string<data_type>(data))
+		{}
+	template <typename data_type> primitive(subencodings::ascii16, data_type const &data) :
+		data(to_string_ascii16<data_type>(data))
+		{}
+	template <typename data_type> primitive(std::string const &type_name, subencodings::ascii16, data_type const &data) : 
+		value(type_name), data(to_string_ascii16<data_type>(data))
+		{}
 
 	primitive(primitive const &) = delete;
 	primitive(primitive &&) = delete;
 	primitive &operator =(primitive const &) = delete;
 	primitive &operator =(primitive &&) = delete;
 	
-	void set(std::string const &data);
-	void set(char const *data);
-	void set(bool data);
-	void set(int data);
-	void set(unsigned int data);
-	void set(float data);
-	void set(double data);
-	void set(subencodings::ascii16, std::vector<uint8_t> const &data);
+	template <typename data_type> void set(data_type const &data)
+		{ data = to_string<data_type>(data); }
+	template <typename data_type> void set(subencodings::ascii16, data_type const &data)
+		{ data = to_string_ascii16<data_type>(data); }
 
 	std::string const &get_primitive(void) const;
 	bool get_bool(void) const;
-	int get_int(void) const;
-	unsigned int get_uint(void) const;
+	int64_t get_int(void) const;
+	uint64_t get_uint(void) const;
 	float get_float(void) const;
 	double get_double(void) const;
 	std::string const &get_string(void) const;

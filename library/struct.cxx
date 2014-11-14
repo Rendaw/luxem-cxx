@@ -15,6 +15,18 @@ extern "C"
 namespace luxem
 {
 
+std::string to_string_ascii16(uint8_t const *pointer, size_t const length)
+{
+	luxem_string_t input{(char const *)pointer, length};
+	luxem_string_t error;
+	auto converted = luxem_to_ascii16(&input, &error);
+	if (!converted)
+		throw std::runtime_error(std::string(error.pointer, error.length));
+	std::string out(converted->pointer, converted->length);
+	free((void *)converted);
+	return out;
+}
+
 value::value(void) : typed(false) {}
 
 value::value(std::string const &type) : typed(true), type(type) {}
@@ -37,13 +49,6 @@ template <typename type> type convert_to(std::string const &data)
 	return out;
 }
 
-template <typename type> std::string convert_from(type const &data)
-{
-	std::stringstream render;
-	render << data;
-	return render.str();
-}
-
 bool convert_to_bool(std::string const &data)
 {
 	auto lower = data;
@@ -51,11 +56,6 @@ bool convert_to_bool(std::string const &data)
 	return (lower != "0") &&
 		(lower != "false") &&
 		(lower != "no");
-}
-
-std::string convert_from_bool(bool const &data)
-{
-	return data ? "true" : "false";
 }
 
 std::vector<uint8_t> convert_to(subencodings::ascii16, std::string const &data)
@@ -72,101 +72,26 @@ std::vector<uint8_t> convert_to(subencodings::ascii16, std::string const &data)
 	return out;
 }
 
-std::string convert_from(subencodings::ascii16, std::vector<uint8_t> const &data)
-{
-	luxem_string_t input{(char const *)&data[0], data.size()};
-	luxem_string_t error;
-	auto converted = luxem_to_ascii16(&input, &error);
-	if (!converted)
-		throw std::runtime_error(std::string(error.pointer, error.length));
-	std::string out(converted->pointer, converted->length);
-	free((void *)converted);
-	return out;
-}
-
 std::string const primitive::name("primitive");
 
 std::string const &primitive::get_name(void) const { return name; }
 
-primitive::primitive(std::string const &data) :
-	data(data) {}
 primitive::primitive(std::string &&data) :
 	data(std::move(data)) {}
-primitive::primitive(std::string const &type, std::string const &data) :
-	value(type), data(data) {}
 primitive::primitive(std::string &&type, std::string &&data) :
 	value(std::move(type)), data(std::move(data)) {}
 	
-primitive::primitive(char const *data) :
-	data(data) {}
-primitive::primitive(std::string const &type, char const *data) :
-	value(type), data(data) {}
-	
-primitive::primitive(bool data) :
-	data(convert_from_bool(data)) {}
-primitive::primitive(std::string const &type, bool data) :
-	value(type), data(convert_from_bool(data)) {}
-
-primitive::primitive(int data) :
-	data(convert_from<int>(data)) {}
-primitive::primitive(std::string const &type, int data) :
-	value(type), data(convert_from<int>(data)) {}
-
-primitive::primitive(unsigned int data) :
-	data(convert_from<unsigned int>(data)) {}
-primitive::primitive(std::string const &type, unsigned int data) :
-	value(type), data(convert_from<unsigned int>(data)) {}
-
-primitive::primitive(float data) :
-	data(convert_from<float>(data)) {}
-primitive::primitive(std::string const &type, float data) :
-	value(type), data(convert_from<float>(data)) {}
-
-primitive::primitive(double data) :
-	data(convert_from<double>(data)) {}
-primitive::primitive(std::string const &type, double data) :
-	value(type), data(convert_from<double>(data)) {}
-
-primitive::primitive(subencodings::ascii16, std::vector<uint8_t> const &data) :
-	data(convert_from(subencodings::ascii16{}, data)) {}
-primitive::primitive(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data) :
-	value(type), data(convert_from(subencodings::ascii16{}, data)) {}
-
-void primitive::set(std::string const &data) 
-	{ this->data = data; }
-	
-void primitive::set(char const *data) 
-	{ this->data = data; }
-
-void primitive::set(bool data) 
-	{ this->data = convert_from_bool(data); }
-
-void primitive::set(int data) 
-	{ this->data = convert_from<int>(data); }
-
-void primitive::set(unsigned int data) 
-	{ this->data = convert_from<unsigned int>(data); }
-
-void primitive::set(float data) 
-	{ this->data = convert_from<float>(data); }
-
-void primitive::set(double data) 
-	{ this->data = convert_from<double>(data); }
-
-void primitive::set(subencodings::ascii16, std::vector<uint8_t> const &data) 
-	{ this->data = convert_from(subencodings::ascii16{}, data); }
-
 std::string const &primitive::get_primitive(void) const 
 	{ return data; }
 
 bool primitive::get_bool(void) const 
 	{ return convert_to_bool(data); }
 
-int primitive::get_int(void) const 
-	{ return convert_to<int>(data); }
+int64_t primitive::get_int(void) const 
+	{ return convert_to<int64_t>(data); }
 
-unsigned int primitive::get_uint(void) const 
-	{ return convert_to<unsigned int>(data); }
+uint64_t primitive::get_uint(void) const 
+	{ return convert_to<uint64_t>(data); }
 
 float primitive::get_float(void) const 
 	{ return convert_to<float>(data); }

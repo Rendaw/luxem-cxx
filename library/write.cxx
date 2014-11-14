@@ -178,10 +178,10 @@ writer &writer::type(std::string const &data)
 writer &writer::primitive(std::string const &data)
 	{ raw_writer::primitive(data); return *this; }
 
-writer &writer::value(luxem::value const &data)
+writer &writer::value(std::shared_ptr<luxem::value> const &data)
 {
 	std::list<std::unique_ptr<stackable>> stack;
-	process(stack, data);
+	process(stack, *data);
 	while (!stack.empty())
 	{
 		while (stack.back()->step(*this, stack)) {}
@@ -189,48 +189,6 @@ writer &writer::value(luxem::value const &data)
 	}
 	return *this;
 }
-	
-writer &writer::value(char const *data)
-	{ return value(luxem::primitive(data)); }
-
-writer &writer::value(std::string const &type, char const *data)
-	{ return value(luxem::primitive(type, data)); }
-
-writer &writer::value(bool data) 
-	{ return value(luxem::primitive(data)); }
-
-writer &writer::value(std::string const &type, bool data)
-	{ return value(luxem::primitive(type, data)); }
-
-writer &writer::value(int data) 
-	{ return value(luxem::primitive(data)); }
-
-writer &writer::value(std::string const &type, int data)
-	{ return value(luxem::primitive(type, data)); }
-
-writer &writer::value(unsigned int data) 
-	{ return value(luxem::primitive(data)); }
-
-writer &writer::value(std::string const &type, unsigned int data)
-	{ return value(luxem::primitive(type, data)); }
-
-writer &writer::value(float data) 
-	{ return value(luxem::primitive(data)); }
-
-writer &writer::value(std::string const &type, float data)
-	{ return value(luxem::primitive(type, data)); }
-
-writer &writer::value(double data) 
-	{ return value(luxem::primitive(data)); }
-
-writer &writer::value(std::string const &type, double data)
-	{ return value(luxem::primitive(type, data)); }
-
-writer &writer::value(subencodings::ascii16, std::vector<uint8_t> const &data) 
-	{ return value(luxem::primitive(subencodings::ascii16{}, data)); }
-
-writer &writer::value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data)
-	{ return value(luxem::primitive(type, subencodings::ascii16{}, data)); }
 
 void writer::process(std::list<std::unique_ptr<writer::stackable>> &stack, luxem::value const &data)
 {

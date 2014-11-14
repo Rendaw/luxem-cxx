@@ -78,21 +78,30 @@ struct writer : raw_writer
 	writer &type(std::string const &data);
 	writer &primitive(std::string const &data);
 
-	writer &value(luxem::value const &data);
-	writer &value(char const *data);
-	writer &value(std::string const &type, char const *data);
-	writer &value(bool data);
-	writer &value(std::string const &type, bool data);
-	writer &value(int data);
-	writer &value(std::string const &type, int data);
-	writer &value(unsigned int data);
-	writer &value(std::string const &type, unsigned int data);
-	writer &value(float data);
-	writer &value(std::string const &type, float data);
-	writer &value(double data);
-	writer &value(std::string const &type, double data);
-	writer &value(subencodings::ascii16, std::vector<uint8_t> const &data);
-	writer &value(std::string const &type, subencodings::ascii16, std::vector<uint8_t> const &data);
+	writer &value(std::shared_ptr<luxem::value> const &data);
+
+	template <typename data_type, class enable = void> struct is_smart_ptr { static constexpr bool value = false; };
+	template <typename data_type> struct is_smart_ptr<
+		data_type, 
+		typename std::enable_if<
+			std::is_same<data_type, std::shared_ptr<typename data_type::element_type>>::value || 
+			std::is_same<data_type, std::unique_ptr<typename data_type::element_type>>::value
+		>::type
+	> { static constexpr bool value = true; };
+	template <
+		typename data_type,
+		typename std::enable_if<
+			!std::is_pointer<data_type>::value &&
+			!is_smart_ptr<data_type>::value
+		>::type * = nullptr
+	> writer &value(data_type const &data)
+		{ primitive(to_string<data_type>(data)); return *this; }
+	template <typename data_type> writer &value(std::string const &type_name, data_type const &data)
+		{ type(type_name); primitive(to_string<data_type>(data)); return *this; }
+	template <typename data_type> writer &value_ascii16(data_type const &data)
+		{ primitive(to_string_ascii16<data_type>(data)); return *this; }
+	template <typename data_type> writer &value_ascii16(std::string const &type_name, data_type const &data)
+		{ type(type_name); primitive(to_string_ascii16<data_type>(data)); return *this; }
 
 	friend struct array_stackable;
 	friend struct object_stackable;

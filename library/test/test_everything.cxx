@@ -164,8 +164,10 @@ int main(void)
 	std::shared_ptr<luxem::value> output;
 	luxem::reader reader;
 	reader.build_struct([&output](std::shared_ptr<luxem::value> &&value) mutable { output = std::move(value); });
-	reader.feed(luxem::writer().value(*input).dump());
+	reader.feed(luxem::writer().value(input).dump());
 	assert(output);
+	std::cout << "input: " << luxem::writer().value(input).dump() << std::endl;
+	std::cout << "output: " << luxem::writer().value(output).dump() << std::endl;
 	compare_value(*output, *input);
 
 	{
