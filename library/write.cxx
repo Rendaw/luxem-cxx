@@ -94,10 +94,10 @@ raw_writer::array_guard::~array_guard(void)
 	{ if (base) base->array_end(); }
 
 raw_writer::object_guard raw_writer::scope_object(void) 
-	{ return object_guard(*this); }
+	{ object_begin(); return object_guard(*this); }
 
 raw_writer::array_guard raw_writer::scope_array(void) 
-	{ return array_guard(*this); }
+	{ array_begin(); return array_guard(*this); }
 
 void raw_writer::check_error(bool succeeded)
 {
