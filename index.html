@@ -157,7 +157,9 @@ int main(void)
 	</div>
 	<div class="class">
 		<h1>Read, streaming</h1>
-		<pre>#include &lt;luxem-cxx/luxem.h&gt;
+		<pre>#include "../luxem.h"
+
+#include &lt;iostream&gt;
 
 int main(void)
 {
@@ -177,9 +179,17 @@ int main(void)
 				}
 			);
 	});
+	reader.feed("4, 12, {\"key\": \"I AM A VALUE TOO\"}, 3");
+	std::cout &lt;&lt; "numbers:";
+	for (auto number : numbers) std::cout &lt;&lt; " " &lt;&lt; number;
+	std::cout &lt;&lt; std::endl;
+	std::cout &lt;&lt; "text: " &lt;&lt; text &lt;&lt; std::endl;
 
 	return 0;
 }</pre>
+		<p>Output:</p>
+		<pre>numbers: 4 12 3
+text: I AM A VALUE TOO</pre>
 	</div>
 </div>
 
