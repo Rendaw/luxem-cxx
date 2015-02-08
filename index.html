@@ -76,7 +76,7 @@ span.pre { font-family: monospace; font-size: 1.2em; color: #2080A0; }
 		<h1>Structure creation</h1>
 		<p>All loosely-typed structures consist of <span class="pre">std::shared_ptr&lt;luxem::value&gt;</span>s.<p>
 		<p><span class="pre">luxem::od</span> and <span class="pre">luxem::ad</span> are convenience typedefs for <span class="pre">luxem::object::object_data</span> and <span class="pre">luxem::array::array_data</span>, respectively.  They are included to ease structure creation.</p>
-		<p>It may be easier to just use <span class="pre">luxem::read_struct</span>.<p>
+		<p>It may be easier to just use <span class="pre">luxem::read_struct</span> to parse a struct from a literal string rather than building it yourself.<p>
 		<pre>#include &lt;luxem-cxx/luxem.h&gt;
 
 int main(void)
@@ -364,7 +364,7 @@ int main(void)
 		<div class="method">
 			<h1>reader::reader(bool austerity_measures = true)</h1>
 			<p>Overrides <span class="pre">raw_reader::raw_reader</span>.</p>
-			<p><span class="pre">austerity_measures</span> is the default austerity measure setting.  This can be overridden in specific object contexts.</p>
+			<p><span class="pre">austerity_measures</span> is the default austerity measure setting.  This can be overridden in specific object contexts.  See <span class="pre"><a href="#luxem_reader_object_context__set_austerity_measures">reader::object_context::set_austerity_measures</a></span> for more information.</p>
 		</div>
 		<div class="method">
 			<h1>reader &amp;reader::element(std::function&lt;void(std::shared_ptr&lt;value&gt; &amp;&amp;data)&gt; &amp;&amp;callback)</h1>
@@ -398,6 +398,7 @@ int main(void)
 		<h1>luxem::reader::object_context</h1>
 		<p><span class="pre">object_context</span> objects are created by <span class="pre">luxem::reader</span> as part of non-struct read operations, and cannot be created elsewise.</p>
 		<div class="method">
+			<a name="luxem_reader_object_context__set_austerity_measures"></a>
 			<h1>void reader::object_context::set_austerity_measures(bool on)</h1>
 			<p>Enables or disables austerity measures for this context.  If austerity measures are enabled, an error will be raised if an object key is read which no callback exists.</p>
 		</div>
